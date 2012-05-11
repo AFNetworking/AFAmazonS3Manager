@@ -73,8 +73,8 @@ NSString * const kAFAmazonS3BucketBaseURLFormatString = @"http://%@.s3.amazonaws
 }
 
 - (NSURL *)baseURL {
-    if (!_s3_baseURL && self.bucket) {
-        return [NSString stringWithFormat:kAFAmazonS3BucketBaseURLFormatString, self.bucket];
+    if (_s3_baseURL && self.bucket) {
+        return [NSURL URLWithString:[NSString stringWithFormat:kAFAmazonS3BucketBaseURLFormatString, self.bucket]];
     }
 
     return _s3_baseURL;
