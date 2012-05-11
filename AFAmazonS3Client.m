@@ -236,7 +236,7 @@ NSString * const kAFAmazonS3BucketBaseURLFormatString = @"http://%@.s3.amazonaws
     NSData *data = [NSURLConnection sendSynchronousRequest:fileRequest returningResponse:&response error:&error];
 
     if (data && response) {
-        NSMutableURLRequest *request = [self multipartFormRequestWithMethod:path path:@"/" parameters:parameters constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
+        NSMutableURLRequest *request = [self multipartFormRequestWithMethod:method path:path parameters:parameters constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
             [formData appendPartWithFileData:data name:@"file" fileName:[path lastPathComponent] mimeType:[response MIMEType]];
         }];
 
