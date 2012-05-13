@@ -73,8 +73,8 @@ NSString * const kAFAmazonS3BucketBaseURLFormatString = @"http://%@.s3.amazonaws
 }
 
 - (NSURL *)baseURL {
-    if (!_s3_baseURL && self.bucket) {
-        return [NSString stringWithFormat:kAFAmazonS3BucketBaseURLFormatString, self.bucket];
+    if (_s3_baseURL && self.bucket) {
+        return [NSURL URLWithString:[NSString stringWithFormat:kAFAmazonS3BucketBaseURLFormatString, self.bucket]];
     }
 
     return _s3_baseURL;
@@ -236,7 +236,7 @@ NSString * const kAFAmazonS3BucketBaseURLFormatString = @"http://%@.s3.amazonaws
     NSData *data = [NSURLConnection sendSynchronousRequest:fileRequest returningResponse:&response error:&error];
 
     if (data && response) {
-        NSMutableURLRequest *request = [self multipartFormRequestWithMethod:path path:@"/" parameters:parameters constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
+        NSMutableURLRequest *request = [self multipartFormRequestWithMethod:method path:path parameters:parameters constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
             [formData appendPartWithFileData:data name:@"file" fileName:[path lastPathComponent] mimeType:[response MIMEType]];
         }];
 
