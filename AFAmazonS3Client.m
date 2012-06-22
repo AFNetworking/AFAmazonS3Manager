@@ -34,7 +34,8 @@ NSString * const kAFAmazonS3BucketBaseURLFormatString = @"http://%@.s3.amazonaws
 @property (readwrite, nonatomic, copy) NSString *secret;
 
 - (void)setObjectWithMethod:(NSString *)method
-                       file:(NSString *)path
+                       file:(NSString *)filePath
+            destinationPath:(NSString *)destinationPath
                  parameters:(NSDictionary *)parameters
                    progress:(void (^)(NSInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite))progressBlock
                     success:(void (^)(id responseObject))success
@@ -76,7 +77,7 @@ NSString * const kAFAmazonS3BucketBaseURLFormatString = @"http://%@.s3.amazonaws
     if (_s3_baseURL && self.bucket) {
         return [NSURL URLWithString:[NSString stringWithFormat:kAFAmazonS3BucketBaseURLFormatString, self.bucket]];
     }
-
+    
     return _s3_baseURL;
 }
 
@@ -197,21 +198,23 @@ NSString * const kAFAmazonS3BucketBaseURLFormatString = @"http://%@.s3.amazonaws
 }
 
 - (void)postObjectWithFile:(NSString *)path
+           destinationPath:(NSString *)destinationPath
                 parameters:(NSDictionary *)parameters
                   progress:(void (^)(NSInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite))progress
                    success:(void (^)(id responseObject))success
                    failure:(void (^)(NSError *error))failure
 {
-    [self setObjectWithMethod:@"POST" file:path parameters:parameters progress:progress success:success failure:failure];
+    [self setObjectWithMethod:@"POST" file:path destinationPath:destinationPath parameters:parameters progress:progress success:success failure:failure];
 }
 
 - (void)putObjectWithFile:(NSString *)path
+          destinationPath:(NSString *)destinationPath
                parameters:(NSDictionary *)parameters
                  progress:(void (^)(NSInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite))progress
                   success:(void (^)(id responseObject))success
                   failure:(void (^)(NSError *error))failure
 {
-    [self setObjectWithMethod:@"PUT" file:path parameters:parameters progress:progress success:success failure:failure];
+    [self setObjectWithMethod:@"PUT" file:path destinationPath:destinationPath parameters:parameters progress:progress success:success failure:failure];
 }
 
 - (void)deleteObjectWithPath:(NSString *)path
@@ -222,13 +225,14 @@ NSString * const kAFAmazonS3BucketBaseURLFormatString = @"http://%@.s3.amazonaws
 }
 
 - (void)setObjectWithMethod:(NSString *)method
-                       file:(NSString *)path
-        parameters:(NSDictionary *)parameters
+                       file:(NSString *)filePath
+            destinationPath:(NSString *)destinationPath
+                 parameters:(NSDictionary *)parameters
                    progress:(void (^)(NSInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite))progress
                     success:(void (^)(id responseObject))success
                     failure:(void (^)(NSError *error))failure
 {
-    NSMutableURLRequest *fileRequest = [NSMutableURLRequest requestWithURL:[NSURL fileURLWithPath:path]];
+    NSMutableURLRequest *fileRequest = [NSMutableURLRequest requestWithURL:[NSURL fileURLWithPath:filePath]];
     [fileRequest setCachePolicy:NSURLCacheStorageNotAllowed];
 
     NSURLResponse *response = nil;
@@ -236,8 +240,8 @@ NSString * const kAFAmazonS3BucketBaseURLFormatString = @"http://%@.s3.amazonaws
     NSData *data = [NSURLConnection sendSynchronousRequest:fileRequest returningResponse:&response error:&error];
 
     if (data && response) {
-        NSMutableURLRequest *request = [self multipartFormRequestWithMethod:method path:path parameters:parameters constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
-            [formData appendPartWithFileData:data name:@"file" fileName:[path lastPathComponent] mimeType:[response MIMEType]];
+        NSMutableURLRequest *request = [self multipartFormRequestWithMethod:method path:destinationPath parameters:parameters constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
+            [formData appendPartWithFileData:data name:@"file" fileName:[filePath lastPathComponent] mimeType:[response MIMEType]];
         }];
 
         AFHTTPRequestOperation *requestOperation = [self HTTPRequestOperationWithRequest:request success:^(AFHTTPRequestOperation *operation, id responseObject) {
