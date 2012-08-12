@@ -169,7 +169,7 @@ NSString * const kAFAmazonS3BucketBaseURLFormatString = @"http://%@.s3.amazonaws
         }
     }];
 
-    [requestOperation setUploadProgressBlock:progress];
+    [requestOperation setDownloadProgressBlock:progress];
 
     [self enqueueHTTPRequestOperation:requestOperation];
 }
@@ -191,7 +191,7 @@ NSString * const kAFAmazonS3BucketBaseURLFormatString = @"http://%@.s3.amazonaws
         }
     }];
 
-    [requestOperation setUploadProgressBlock:progress];
+    [requestOperation setDownloadProgressBlock:progress];
     [requestOperation setOutputStream:outputStream];
 
     [self enqueueHTTPRequestOperation:requestOperation];
