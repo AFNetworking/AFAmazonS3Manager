@@ -121,6 +121,7 @@ extern NSString * const kAFAmazonS3BaseURLString;
  Adds an object to a bucket using forms.
  */
 - (void)postObjectWithFile:(NSString *)path
+           destinationPath:(NSString *)destinationPath
                 parameters:(NSDictionary *)parameters
                   progress:(void (^)(NSInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite))progress
                    success:(void (^)(id responseObject))success
@@ -130,6 +131,7 @@ extern NSString * const kAFAmazonS3BaseURLString;
  Adds an object to a bucket for a user that has write access to the bucket. A success response indicates the object was successfully stored; if the object already exists, it will be overwritten.
  */
 - (void)putObjectWithFile:(NSString *)path
+          destinationPath:(NSString *)destinationPath
                parameters:(NSDictionary *)parameters
                  progress:(void (^)(NSInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite))progress
                   success:(void (^)(id responseObject))success
