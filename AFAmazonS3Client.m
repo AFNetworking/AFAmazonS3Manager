@@ -24,8 +24,8 @@
 #import "AFAmazonS3Client.h"
 #import "AFXMLRequestOperation.h"
 
-NSString * const kAFAmazonS3BaseURLString = @"http://s3.amazonaws.com";
-NSString * const kAFAmazonS3BucketBaseURLFormatString = @"http://%@.s3.amazonaws.com";
+NSString * const kAFAmazonS3BaseURLString = @"http:s//s3.amazonaws.com";
+NSString * const kAFAmazonS3BucketBaseURLFormatString = @"https://s3.amazonaws.com/%@/";
 
 #pragma mark -
 
