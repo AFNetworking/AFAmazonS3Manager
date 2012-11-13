@@ -104,7 +104,7 @@ extern NSString * const kAFAmazonS3BaseURLString;
  Gets an object for a user that has read access to the object.
  */
 - (void)getObjectWithPath:(NSString *)path
-                 progress:(void (^)(NSInteger bytesRead, long long totalBytesRead, long long totalBytesExpectedToRead))progress
+                 progress:(void (^)(NSUInteger bytesRead, long long totalBytesRead, long long totalBytesExpectedToRead))progress
                   success:(void (^)(id responseObject, NSData *responseData))success
                   failure:(void (^)(NSError *error))failure;
 
@@ -113,7 +113,7 @@ extern NSString * const kAFAmazonS3BaseURLString;
  */
 - (void)getObjectWithPath:(NSString *)path
              outputStream:(NSOutputStream *)outputStream
-                 progress:(void (^)(NSInteger bytesRead, long long totalBytesRead, long long totalBytesExpectedToRead))progress
+                 progress:(void (^)(NSUInteger bytesRead, long long totalBytesRead, long long totalBytesExpectedToRead))progress
                   success:(void (^)(id responseObject))success
                   failure:(void (^)(NSError *error))failure;
 
@@ -123,7 +123,7 @@ extern NSString * const kAFAmazonS3BaseURLString;
 - (void)postObjectWithFile:(NSString *)path
            destinationPath:(NSString *)destinationPath
                 parameters:(NSDictionary *)parameters
-                  progress:(void (^)(NSInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite))progress
+                  progress:(void (^)(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite))progress
                    success:(void (^)(id responseObject))success
                    failure:(void (^)(NSError *error))failure;
 
@@ -133,7 +133,7 @@ extern NSString * const kAFAmazonS3BaseURLString;
 - (void)putObjectWithFile:(NSString *)path
           destinationPath:(NSString *)destinationPath
                parameters:(NSDictionary *)parameters
-                 progress:(void (^)(NSInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite))progress
+                 progress:(void (^)(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite))progress
                   success:(void (^)(id responseObject))success
                   failure:(void (^)(NSError *error))failure;
 
