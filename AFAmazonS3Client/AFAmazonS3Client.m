@@ -77,7 +77,7 @@ NSString * const kAFAmazonS3BucketBaseURLFormatString = @"https://%@.s3.amazonaw
     if (_s3_baseURL && self.bucket) {
         return [NSURL URLWithString:[NSString stringWithFormat:kAFAmazonS3BucketBaseURLFormatString, self.bucket]];
     }
-    
+
     return _s3_baseURL;
 }
 
@@ -111,7 +111,7 @@ NSString * const kAFAmazonS3BucketBaseURLFormatString = @"https://%@.s3.amazonaw
     [self enqueueHTTPRequestOperation:requestOperation];
 }
 
-#pragma mark - Service Operations
+#pragma mark Service Operations
 
 - (void)getServiceWithSuccess:(void (^)(id responseObject))success
                       failure:(void (^)(NSError *error))failure
@@ -119,7 +119,7 @@ NSString * const kAFAmazonS3BucketBaseURLFormatString = @"https://%@.s3.amazonaw
     [self enqueueS3RequestOperationWithMethod:@"GET" path:@"/" parameters:nil success:success failure:failure];
 }
 
-#pragma mark - Bucket Operations
+#pragma mark Bucket Operations
 
 - (void)getBucket:(NSString *)bucket
           success:(void (^)(id responseObject))success
@@ -144,7 +144,7 @@ NSString * const kAFAmazonS3BucketBaseURLFormatString = @"https://%@.s3.amazonaw
     [self enqueueS3RequestOperationWithMethod:@"DELETE" path:bucket parameters:nil success:success failure:failure];
 }
 
-#pragma mark - Object Operations
+#pragma mark Object Operations
 
 - (void)headObjectWithPath:(NSString *)path
                    success:(void (^)(id responseObject))success

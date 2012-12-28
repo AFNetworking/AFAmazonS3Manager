@@ -2,17 +2,17 @@
 // AFAmazonS3Client.h
 //
 // Copyright (c) 2012 Mattt Thompson (http://mattt.me/)
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,28 +23,29 @@
 
 #import "AFHTTPClient.h"
 
-extern NSString * const kAFAmazonS3BaseURLString;
+/**
 
+ */
 @interface AFAmazonS3Client : AFHTTPClient
 
 /**
- 
+
  */
 @property (nonatomic, retain) NSURL *baseURL;
 
 /**
- 
+
  */
 @property (nonatomic, copy) NSString *bucket;
 
 /**
- 
+
  */
 - (id)initWithAccessKeyID:(NSString *)accessKey
                    secret:(NSString *)secret;
 
 /**
- 
+
  */
 - (void)enqueueS3RequestOperationWithMethod:(NSString *)method
                                        path:(NSString *)path
@@ -145,3 +146,12 @@ extern NSString * const kAFAmazonS3BaseURLString;
                      failure:(void (^)(NSError *error))failure;
 
 @end
+
+///----------------
+/// @name Constants
+///----------------
+
+/**
+
+ */
+extern NSString * const kAFAmazonS3BaseURLString;
