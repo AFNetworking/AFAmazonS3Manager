@@ -306,7 +306,7 @@ static NSData * AFHMACSHA1FromStringWithKey(NSString *string, NSString *key){
     if (data && response) {
         NSMutableURLRequest *request = [self multipartFormRequestWithMethod:method path:destinationPath parameters:parameters constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
             
-            NSString *policyDocument = [self policyDocumentForMIMEtype:[response MIMEType] filename:[filePath lastPathComponent]];
+            NSString *policyDocument = [self policyDocumentForFilename:[filePath lastPathComponent] MIMEtype:[response MIMEType] parameters:parameters];
             
             [formData appendPartWithFormData:[self.accessKey dataUsingEncoding:NSUTF8StringEncoding] name:@"AWSAccessKeyId"];
             [formData appendPartWithFormData:[policyDocument dataUsingEncoding:NSUTF8StringEncoding] name:@"Policy"];
@@ -347,18 +347,25 @@ static NSData * AFHMACSHA1FromStringWithKey(NSString *string, NSString *key){
     
 }
 
-
-- (NSString *)policyDocumentForMIMEtype:(NSString *)mimeType filename:(NSString *)filename{
+- (NSString *)policyDocumentForFilename:(NSString *)filename MIMEtype:(NSString *)mimeType parameters:(NSDictionary *)parameters{
     
-    NSMutableDictionary *policy = [NSMutableDictionary dictionary];
-    
-    NSDate *expirationDate = [NSDate dateWithTimeIntervalSinceNow:60*60];
+    NSDate *expirationDate = [NSDate dateWithTimeIntervalSinceNow:NSIntegerMax];
     
     NSString *expirationDateString = [[self dateFormatter] stringFromDate:expirationDate timeZone:[NSTimeZone defaultTimeZone]];
     
-    policy[@"expiration"] = expirationDateString;
+    NSMutableDictionary *policy = [NSMutableDictionary dictionaryWithObject:expirationDateString forKey:@"expiration"];
     
-    NSArray *conditions = @[@{@"bucket" : self.bucket},@[@"starts-with",@"$key",filename]];
+    NSMutableArray *conditions = [NSMutableArray arrayWithObject:@{ @"bucket" : self.bucket }];
+    
+    if (parameters) {
+        
+        for (NSString *key in [parameters allKeys]) {
+            
+            [conditions addObject:@[ @"starts-with", [NSString stringWithFormat:@"$%@",key], parameters[key]]];
+            
+        }
+        
+    }
     
     policy[@"conditions"] = conditions;
     
@@ -373,6 +380,7 @@ static NSData * AFHMACSHA1FromStringWithKey(NSString *string, NSString *key){
     NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
     
     return AFBase64EncodedStringFromString(jsonString);
+    
 }
 
 
