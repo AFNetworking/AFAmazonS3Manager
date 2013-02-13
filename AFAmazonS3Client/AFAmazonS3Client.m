@@ -24,9 +24,7 @@
 #import "AFAmazonS3Client.h"
 #import "AFXMLRequestOperation.h"
 #import <CommonCrypto/CommonHMAC.h>
-#import <AutographerSDK/ISO8601DateFormatter.h>
-//#import "ISO8601DateFormatter.h"
-
+#import "ISO8601DateFormatter.h"
 
 NSString * const kAFAmazonS3BaseURLString = @"https://s3.amazonaws.com";
 NSString * const kAFAmazonS3BucketBaseURLFormatString = @"https://%@.s3.amazonaws.com";
