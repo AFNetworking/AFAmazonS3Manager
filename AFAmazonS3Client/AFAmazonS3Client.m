@@ -23,9 +23,9 @@
 
 #import "AFAmazonS3Client.h"
 #import "AFXMLRequestOperation.h"
-#import "NSData+SHA1.h"
 #import <CommonCrypto/CommonHMAC.h>
-#import "ISO8601DateFormatter.h"
+#import <AutographerSDK/ISO8601DateFormatter.h>
+//#import "ISO8601DateFormatter.h"
 
 
 NSString * const kAFAmazonS3BaseURLString = @"https://s3.amazonaws.com";
@@ -347,7 +347,6 @@ static NSData * AFHMACSHA1FromStringWithKey(NSString *string, NSString *key){
     
 }
 
-// This is mostly based on http://doc.s3.amazonaws.com/proposals/post.html
 
 - (NSString *)policyDocumentForMIMEtype:(NSString *)mimeType filename:(NSString *)filename{
     
