@@ -347,6 +347,8 @@ static NSData * AFHMACSHA1FromStringWithKey(NSString *string, NSString *key){
     
 }
 
+// This is mostly based on http://doc.s3.amazonaws.com/proposals/post.html
+
 - (NSString *)policyDocumentForMIMEtype:(NSString *)mimeType filename:(NSString *)filename{
     
     NSMutableDictionary *policy = [NSMutableDictionary dictionary];
