@@ -162,17 +162,6 @@
                      success:(void (^)(AFHTTPRequestOperation *operation, id responseObject))success
                      failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure;
 
-/**
- Helper fuctions for creating the signature for S3 Requests
- */
-+ (NSString *)stringByURLEncodingForS3Path:(NSString *)key;
-+ (NSDateFormatter*)S3ResponseDateFormatter;
-+ (NSDateFormatter*)S3RequestDateFormatter;
-+ (NSString *)base64forData:(NSData *)theData;
-+ (NSData *)HMACSHA1withKey:(NSString *)key forString:(NSString *)string;
-+ (NSString *)mimeTypeForFileAtPath:(NSString *)path;
-
-
 @end
 
 ///----------------

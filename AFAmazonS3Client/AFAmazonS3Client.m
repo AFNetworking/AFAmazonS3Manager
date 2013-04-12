@@ -26,7 +26,6 @@
 #import <CommonCrypto/CommonHMAC.h>
 #import <CommonCrypto/CommonDigest.h>
 #import <MobileCoreServices/MobileCoreServices.h>
-#import <XMLDictionary/XMLDictionary.h>
 
 NSString * const kAFAmazonS3BaseURLString = @"https://s3.amazonaws.com";
 NSString * const kAFAmazonS3BucketBaseURLFormatString = @"https://%@.s3.amazonaws.com";
@@ -44,6 +43,17 @@ NSString * const kAFAmazonS3BucketBaseURLFormatString = @"https://%@.s3.amazonaw
                    progress:(void (^)(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite))progressBlock
                     success:(void (^)(AFHTTPRequestOperation *operation, id responseObject))success
                     failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure;
+
+/**
+ Helper fuctions for creating the signature for S3 Requests
+ */
++ (NSString *)stringByURLEncodingForS3Path:(NSString *)key;
++ (NSDateFormatter*)S3ResponseDateFormatter;
++ (NSDateFormatter*)S3RequestDateFormatter;
++ (NSString *)base64forData:(NSData *)theData;
++ (NSData *)HMACSHA1withKey:(NSString *)key forString:(NSString *)string;
++ (NSString *)mimeTypeForFileAtPath:(NSString *)path;
+
 @end
 
 @implementation AFAmazonS3Client
@@ -60,7 +70,6 @@ NSString * const kAFAmazonS3BucketBaseURLFormatString = @"https://%@.s3.amazonaw
 
     [self registerHTTPOperationClass:[AFXMLRequestOperation class]];
     [self setParameterEncoding:AFFormURLParameterEncoding];
-    //	[self setDefaultHeader:@"Accept" value:@"application/xml"];
 
     return self;
 }
@@ -166,7 +175,6 @@ NSString * const kAFAmazonS3BucketBaseURLFormatString = @"https://%@.s3.amazonaw
 {
     [self buildRequestHeadersForBucket:self.bucket key:path method:method];
     NSURLRequest *request = [self requestWithMethod:method path:path parameters:parameters];
-    
     AFHTTPRequestOperation *requestOperation = [self HTTPRequestOperationWithRequest:request success:^(AFHTTPRequestOperation *operation, id responseObject) {
         if (success) {
             success(operation, responseObject);
@@ -176,7 +184,7 @@ NSString * const kAFAmazonS3BucketBaseURLFormatString = @"https://%@.s3.amazonaw
             failure(operation, error);
         }
     }];
-    
+
     [self enqueueHTTPRequestOperation:requestOperation];
 }
 
@@ -187,7 +195,6 @@ NSString * const kAFAmazonS3BucketBaseURLFormatString = @"https://%@.s3.amazonaw
 {
     [self enqueueS3RequestOperationWithMethod:@"GET" path:@"/" parameters:nil success:success failure:failure];
 }
-
 
 #pragma mark Bucket Operations
 
@@ -224,7 +231,7 @@ NSString * const kAFAmazonS3BucketBaseURLFormatString = @"https://%@.s3.amazonaw
           failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure
 {
     [self enqueueS3RequestOperationWithMethod:@"PUT" path:bucket parameters:parameters success:success failure:failure];
-    
+
 }
 
 - (void)deleteBucket:(NSString *)bucket
@@ -258,9 +265,9 @@ NSString * const kAFAmazonS3BucketBaseURLFormatString = @"https://%@.s3.amazonaw
             failure(operation, error);
         }
     }];
-    
+
     [requestOperation setDownloadProgressBlock:progress];
-    
+
     [self enqueueHTTPRequestOperation:requestOperation];
 }
 
@@ -280,10 +287,10 @@ NSString * const kAFAmazonS3BucketBaseURLFormatString = @"https://%@.s3.amazonaw
             failure(operation, error);
         }
     }];
-    
+
     [requestOperation setDownloadProgressBlock:progress];
     [requestOperation setOutputStream:outputStream];
-    
+
     [self enqueueHTTPRequestOperation:requestOperation];
 }
 
@@ -444,7 +451,6 @@ NSString * const kAFAmazonS3BucketBaseURLFormatString = @"https://%@.s3.amazonaw
 }
 
 // From: http://www.cocoadev.com/index.pl?BaseSixtyFour
-
 + (NSString *)base64forData:(NSData *)theData {
 	const uint8_t* input = (const uint8_t*)[theData bytes];
 	NSInteger length = [theData length];
@@ -475,7 +481,6 @@ NSString * const kAFAmazonS3BucketBaseURLFormatString = @"https://%@.s3.amazonaw
 }
 
 // From: http://stackoverflow.com/questions/476455/is-there-a-library-for-iphone-to-work-with-hmac-sha-1-encoding
-
 + (NSData *)HMACSHA1withKey:(NSString *)key forString:(NSString *)string {
 	NSData *clearTextData = [string dataUsingEncoding:NSUTF8StringEncoding];
 	NSData *keyData = [key dataUsingEncoding:NSUTF8StringEncoding];
