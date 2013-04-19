@@ -323,9 +323,9 @@ static NSData * AFHMACSHA1FromStringWithKey(NSString *string, NSString *key){
             if (success) {
                 success(responseObject);
             }
-        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        } failure:^(AFHTTPRequestOperation *operation, NSError *requestError) {
             if (failure) {
-                failure(error);
+                failure(requestError);
             }
         }];
 
