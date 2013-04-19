@@ -353,7 +353,7 @@ static NSData * AFHMACSHA1FromStringWithKey(NSString *string, NSString *key){
     
     NSDate *expirationDate = [NSDate dateWithTimeIntervalSinceNow:NSIntegerMax];
     
-    NSString *expirationDateString = [[self dateFormatter] stringFromDate:expirationDate timeZone:[NSTimeZone defaultTimeZone]];
+    NSString *expirationDateString = [[self dateFormatter] stringFromDate:expirationDate timeZone:[NSTimeZone timeZoneWithName:@"UTC"]];
     
     NSMutableDictionary *policy = [NSMutableDictionary dictionaryWithObject:expirationDateString forKey:@"expiration"];
     
