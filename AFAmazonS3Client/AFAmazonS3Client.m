@@ -102,17 +102,6 @@ NSString * AFBase64EncodedStringFromData(NSData *data) {
 @synthesize accessKey = _accessKey;
 @synthesize secret = _secret;
 
-- (id)initWithBaseURL:(NSURL *)url {
-    self = [super initWithBaseURL:url];
-    if (!self) {
-        return nil;
-    }
-
-    [self registerHTTPOperationClass:[AFXMLRequestOperation class]];
-
-    return self;
-}
-
 - (id)initWithAccessKeyID:(NSString *)accessKey
                    secret:(NSString *)secret
 {
@@ -123,6 +112,17 @@ NSString * AFBase64EncodedStringFromData(NSData *data) {
 
     self.accessKey = accessKey;
     self.secret = secret;
+
+    return self;
+}
+
+- (id)initWithBaseURL:(NSURL *)url {
+    self = [super initWithBaseURL:url];
+    if (!self) {
+        return nil;
+    }
+
+    [self registerHTTPOperationClass:[AFXMLRequestOperation class]];
 
     return self;
 }
@@ -314,23 +314,25 @@ NSString * AFBase64EncodedStringFromData(NSData *data) {
     }
 }
 
+#pragma mark - AFHTTPClient
+
 - (NSMutableURLRequest *)requestWithMethod:(NSString *)method
                                       path:(NSString *)path
                                 parameters:(NSDictionary *)parameters
 {
     NSMutableURLRequest *request = [super requestWithMethod:method path:path parameters:parameters];
-    
-    if (_accessKey && _secret) {
-        NSString *canonicalizedResource = [NSString stringWithFormat:@"/%@%@", _bucket, path];
+
+    if (self.accessKey && self.secret) {
+        NSString *canonicalizedResource = [NSString stringWithFormat:@"/%@%@", self.bucket, path];
         NSString *date = AFRFC822FormatStringFromDate([NSDate date]);
         NSString *stringToSign = [NSString stringWithFormat:@"%@\n\n\n%@\n%@", method, date, canonicalizedResource];
-        NSData *hmac = AFHMACSHA1EncodedDataFromStringWithKey(stringToSign, _secret);
+        NSData *hmac = AFHMACSHA1EncodedDataFromStringWithKey(stringToSign, self.secret);
         NSString *signature = AFBase64EncodedStringFromData(hmac);
-        
+
         [request setValue:date forHTTPHeaderField:@"Date"];
-        [request setValue:[NSString stringWithFormat:@"AWS %@:%@", _accessKey, signature] forHTTPHeaderField:@"Authorization"];
+        [request setValue:[NSString stringWithFormat:@"AWS %@:%@", self.accessKey, signature] forHTTPHeaderField:@"Authorization"];
     }
-    
+
     return request;
 }
 
