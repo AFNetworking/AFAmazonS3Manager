@@ -48,7 +48,7 @@ static NSString *AFRFC822FormatStringFromDate(NSDate *date) {
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
     [dateFormatter setTimeZone:[NSTimeZone timeZoneWithName:@"GMT"]];
     [dateFormatter setDateFormat:@"EEE, dd MMM yyyy HH:mm:ss z"];
-    [dateFormatter setLocale:[[NSLocale alloc] initWithLocaleIdentifier:@"en_US"]];
+    [dateFormatter setLocale:[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"]];
     
     return [dateFormatter stringFromDate:date];
 }
@@ -320,14 +320,16 @@ NSString * AFBase64EncodedStringFromData(NSData *data) {
 {
     NSMutableURLRequest *request = [super requestWithMethod:method path:path parameters:parameters];
     
-    NSString *canonicalizedResource = [NSString stringWithFormat:@"/%@%@", _bucket, path];
-    NSString *date = AFRFC822FormatStringFromDate([NSDate date]);
-    NSString *stringToSign = [NSString stringWithFormat:@"%@\n\n\n%@\n%@", method, date, canonicalizedResource];
-    NSData *hmac = AFHMACSHA1EncodedDataFromStringWithKey(stringToSign, _secret);
-    NSString *signature = AFBase64EncodedStringFromData(hmac);
-    
-    [request setValue:date forHTTPHeaderField:@"Date"];
-    [request setValue:[NSString stringWithFormat:@"AWS %@:%@", _accessKey, signature] forHTTPHeaderField:@"Authorization"];
+    if (_accessKey && _secret) {
+        NSString *canonicalizedResource = [NSString stringWithFormat:@"/%@%@", _bucket, path];
+        NSString *date = AFRFC822FormatStringFromDate([NSDate date]);
+        NSString *stringToSign = [NSString stringWithFormat:@"%@\n\n\n%@\n%@", method, date, canonicalizedResource];
+        NSData *hmac = AFHMACSHA1EncodedDataFromStringWithKey(stringToSign, _secret);
+        NSString *signature = AFBase64EncodedStringFromData(hmac);
+        
+        [request setValue:date forHTTPHeaderField:@"Date"];
+        [request setValue:[NSString stringWithFormat:@"AWS %@:%@", _accessKey, signature] forHTTPHeaderField:@"Authorization"];
+    }
     
     return request;
 }
