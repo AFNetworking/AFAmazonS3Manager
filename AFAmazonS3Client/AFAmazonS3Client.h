@@ -33,7 +33,7 @@
  
  @discussion By default, the `baseURL` of `AFAmazonS3Client` is `kAFAmazonS3BaseURLString`, or if a `bucket` is set, `kAFAmazonS3BaseURLString` with the bucket as a subdomain. If `baseURL` is set directly, it will override the default `baseURL` and disregard any `bucket` property.
  */
-@property (nonatomic, retain) NSURL *baseURL;
+@property (nonatomic, strong) NSURL *baseURL;
 
 /**
  The S3 bucket for the client.
