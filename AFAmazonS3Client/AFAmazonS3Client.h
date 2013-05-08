@@ -209,6 +209,13 @@
                      success:(void (^)(id responseObject))success
                      failure:(void (^)(NSError *error))failure;
 
+/**
+ Appends the AWS authorization header to a request.
+ 
+ @param request The request to append the authorization header to
+ */
+- (void)appendAuthorizationHeaderToRequest:(NSMutableURLRequest *)request;
+
 @end
 
 ///----------------
