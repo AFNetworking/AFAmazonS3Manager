@@ -165,6 +165,24 @@ NSString * AFBase64EncodedStringFromData(NSData *data) {
     [self enqueueHTTPRequestOperation:requestOperation];
 }
 
+- (void)authorizeRequest:(NSMutableURLRequest *)request withPath:(NSString *)path {
+    if (self.accessKey && self.secret) {
+        NSString *canonicalizedResource = [NSString stringWithFormat:@"/%@%@", self.bucket, path];
+        NSString *date = AFRFC822FormatStringFromDate([NSDate date]);
+        NSString *stringToSign = [NSString stringWithFormat:@"%@\n\n%@\n%@\n%@",
+                                  request.HTTPMethod,
+                                  
+                                  request.allHTTPHeaderFields[@"Content-Type"] == nil ? @"" : request.allHTTPHeaderFields[@"Content-Type"],
+                                  date,
+                                  canonicalizedResource];
+        NSData *hmac = AFHMACSHA1EncodedDataFromStringWithKey(stringToSign, self.secret);
+        NSString *signature = AFBase64EncodedStringFromData(hmac);
+        
+        [request setValue:date forHTTPHeaderField:@"Date"];
+        [request setValue:[NSString stringWithFormat:@"AWS %@:%@", self.accessKey, signature] forHTTPHeaderField:@"Authorization"];
+    }
+}
+
 #pragma mark Service Operations
 
 - (void)getServiceWithSuccess:(void (^)(id responseObject))success
@@ -298,6 +316,7 @@ NSString * AFBase64EncodedStringFromData(NSData *data) {
             [formData appendPartWithFormData:[[filePath lastPathComponent] dataUsingEncoding:NSUTF8StringEncoding] name:@"key"];
             [formData appendPartWithFileData:data name:@"file" fileName:[filePath lastPathComponent] mimeType:[response MIMEType]];
         }];
+        [self authorizeRequest:request withPath:destinationPath];
 
         AFHTTPRequestOperation *requestOperation = [self HTTPRequestOperationWithRequest:request success:^(AFHTTPRequestOperation *operation, id responseObject) {
             if (success) {
@@ -322,19 +341,11 @@ NSString * AFBase64EncodedStringFromData(NSData *data) {
                                 parameters:(NSDictionary *)parameters
 {
     NSMutableURLRequest *request = [super requestWithMethod:method path:path parameters:parameters];
-
-    if (self.accessKey && self.secret) {
-        NSString *canonicalizedResource = [NSString stringWithFormat:@"/%@%@", self.bucket, path];
-        NSString *date = AFRFC822FormatStringFromDate([NSDate date]);
-        NSString *stringToSign = [NSString stringWithFormat:@"%@\n\n\n%@\n%@", method, date, canonicalizedResource];
-        NSData *hmac = AFHMACSHA1EncodedDataFromStringWithKey(stringToSign, self.secret);
-        NSString *signature = AFBase64EncodedStringFromData(hmac);
-
-        [request setValue:date forHTTPHeaderField:@"Date"];
-        [request setValue:[NSString stringWithFormat:@"AWS %@:%@", self.accessKey, signature] forHTTPHeaderField:@"Authorization"];
-    }
+    
+    [self authorizeRequest:request withPath:path];
 
     return request;
 }
 
 @end
+
