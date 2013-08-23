@@ -109,10 +109,10 @@ NSString * AFBase64EncodedStringFromData(NSData *data) {
     if (!self) {
         return nil;
     }
-
+	
     self.accessKey = accessKey;
     self.secret = secret;
-
+	
     return self;
 }
 
@@ -121,9 +121,9 @@ NSString * AFBase64EncodedStringFromData(NSData *data) {
     if (!self) {
         return nil;
     }
-
+	
     [self registerHTTPOperationClass:[AFXMLRequestOperation class]];
-
+	
     return self;
 }
 
@@ -131,7 +131,7 @@ NSString * AFBase64EncodedStringFromData(NSData *data) {
     if (_s3_baseURL && self.bucket) {
         return [NSURL URLWithString:[NSString stringWithFormat:kAFAmazonS3BucketBaseURLFormatString, self.bucket]];
     }
-
+	
     return _s3_baseURL;
 }
 
@@ -152,6 +152,7 @@ NSString * AFBase64EncodedStringFromData(NSData *data) {
                                     failure:(void (^)(NSError *error))failure
 {
     NSURLRequest *request = [self requestWithMethod:method path:path parameters:parameters];
+    
     AFHTTPRequestOperation *requestOperation = [self HTTPRequestOperationWithRequest:request success:^(AFHTTPRequestOperation *operation, id responseObject) {
         if (success) {
             success(responseObject);
@@ -161,7 +162,7 @@ NSString * AFBase64EncodedStringFromData(NSData *data) {
             failure(error);
         }
     }];
-
+	
     [self enqueueHTTPRequestOperation:requestOperation];
 }
 
@@ -206,7 +207,7 @@ NSString * AFBase64EncodedStringFromData(NSData *data) {
           failure:(void (^)(NSError *error))failure
 {
     [self enqueueS3RequestOperationWithMethod:@"PUT" path:bucket parameters:parameters success:success failure:failure];
-
+	
 }
 
 - (void)deleteBucket:(NSString *)bucket
@@ -231,6 +232,7 @@ NSString * AFBase64EncodedStringFromData(NSData *data) {
                   failure:(void (^)(NSError *error))failure
 {
     NSURLRequest *request = [self requestWithMethod:@"GET" path:path parameters:nil];
+    
     AFHTTPRequestOperation *requestOperation = [self HTTPRequestOperationWithRequest:request success:^(AFHTTPRequestOperation *operation, id responseObject) {
         if (success) {
             success(responseObject, operation.responseData);
@@ -240,9 +242,9 @@ NSString * AFBase64EncodedStringFromData(NSData *data) {
             failure(error);
         }
     }];
-
+	
     [requestOperation setDownloadProgressBlock:progress];
-
+	
     [self enqueueHTTPRequestOperation:requestOperation];
 }
 
@@ -253,6 +255,7 @@ NSString * AFBase64EncodedStringFromData(NSData *data) {
                   failure:(void (^)(NSError *error))failure
 {
     NSURLRequest *request = [self requestWithMethod:@"GET" path:path parameters:nil];
+    
     AFHTTPRequestOperation *requestOperation = [self HTTPRequestOperationWithRequest:request success:^(AFHTTPRequestOperation *operation, id responseObject) {
         if (success) {
             success(responseObject);
@@ -262,10 +265,10 @@ NSString * AFBase64EncodedStringFromData(NSData *data) {
             failure(error);
         }
     }];
-
+	
     [requestOperation setDownloadProgressBlock:progress];
     [requestOperation setOutputStream:outputStream];
-
+	
     [self enqueueHTTPRequestOperation:requestOperation];
 }
 
@@ -306,18 +309,19 @@ NSString * AFBase64EncodedStringFromData(NSData *data) {
 {
     NSMutableURLRequest *fileRequest = [NSMutableURLRequest requestWithURL:[NSURL fileURLWithPath:filePath]];
     [fileRequest setCachePolicy:NSURLCacheStorageNotAllowed];
-
+	
     NSURLResponse *response = nil;
     NSError *error = nil;
     NSData *data = [NSURLConnection sendSynchronousRequest:fileRequest returningResponse:&response error:&error];
-
+	
     if (data && response) {
         NSMutableURLRequest *request = [self multipartFormRequestWithMethod:method path:destinationPath parameters:parameters constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
             [formData appendPartWithFormData:[[filePath lastPathComponent] dataUsingEncoding:NSUTF8StringEncoding] name:@"key"];
             [formData appendPartWithFileData:data name:@"file" fileName:[filePath lastPathComponent] mimeType:[response MIMEType]];
         }];
-        [self authorizeRequest:request withPath:destinationPath];
 
+        [self appendAuthorizationHeaderToRequest:request];
+		
         AFHTTPRequestOperation *requestOperation = [self HTTPRequestOperationWithRequest:request success:^(AFHTTPRequestOperation *operation, id responseObject) {
             if (success) {
                 success(responseObject);
@@ -327,25 +331,69 @@ NSString * AFBase64EncodedStringFromData(NSData *data) {
                 failure(error);
             }
         }];
-
+		
         [requestOperation setUploadProgressBlock:progress];
-
+		
         [self enqueueHTTPRequestOperation:requestOperation];
     }
 }
 
 #pragma mark - AFHTTPClient
 
-- (NSMutableURLRequest *)requestWithMethod:(NSString *)method
-                                      path:(NSString *)path
-                                parameters:(NSDictionary *)parameters
-{
-    NSMutableURLRequest *request = [super requestWithMethod:method path:path parameters:parameters];
-    
-    [self authorizeRequest:request withPath:path];
+- (NSMutableURLRequest *)requestWithMethod:(NSString *)method path:(NSString *)path parameters:(NSDictionary *)parameters {
+	NSMutableURLRequest *request = [super requestWithMethod:method path:path parameters:parameters];
+	[self appendAuthorizationHeaderToRequest:request];
+	return request;
+}
 
-    return request;
+- (void)appendAuthorizationHeaderToRequest:(NSMutableURLRequest *)request {
+    if (self.accessKey && self.secret) {
+		/**
+		 * canonicalize the AMZ headers
+		 * NOTE: this is not 100% complete as long header values that are subject to "folding" should
+		 * split into new lines according to AWS's documentation. This should cover about 95% of all requests
+		 * though and is better than having no support for it at all.
+		 */
+		NSMutableDictionary *amzHeaderFields = [NSMutableDictionary dictionary];
+		[[request allHTTPHeaderFields] enumerateKeysAndObjectsUsingBlock:^(NSString *key, id value, BOOL *stop) {
+			key = [key lowercaseString];
+			if([key hasPrefix:@"x-amz"]) {
+				if([amzHeaderFields objectForKey:key]) {
+					value = [[amzHeaderFields objectForKey:key] stringByAppendingFormat:@",%@", value];
+				}
+				[amzHeaderFields setObject:value forKey:key];
+			}
+		}];
+		NSArray *amzHeaderFieldsKeysSorted = [amzHeaderFields.allKeys sortedArrayUsingSelector:@selector(compare:)];
+		NSMutableString *canonicalizedAMZHeaders = [NSMutableString string];
+		for(NSString *key in amzHeaderFieldsKeysSorted) {
+			[canonicalizedAMZHeaders appendFormat:@"%@:%@\n", key, amzHeaderFields[key]];
+		}
+		
+		// collect other parameters for signatures
+        NSString *canonicalizedResource = [NSString stringWithFormat:@"/%@%@", self.bucket, request.URL.path];
+    	NSString *method = [request HTTPMethod];
+		NSString *contentMD5 = [request valueForHTTPHeaderField:@"Content-MD5"];
+		NSString *contentType = [request valueForHTTPHeaderField:@"Content-Type"];
+		NSString *date = AFRFC822FormatStringFromDate([NSDate date]);
+		
+        // construct string to sign
+		NSMutableString *stringToSign = [NSMutableString string];
+		[stringToSign appendFormat:@"%@\n", (method) ? method : @""];
+		[stringToSign appendFormat:@"%@\n", (contentMD5) ? contentMD5 : @""];
+		[stringToSign appendFormat:@"%@\n", (contentType) ? contentType : @""];
+		[stringToSign appendFormat:@"%@\n", (date) ? date : @""];
+		[stringToSign appendFormat:@"%@", (canonicalizedAMZHeaders) ? canonicalizedAMZHeaders : @""];
+		[stringToSign appendFormat:@"%@", canonicalizedResource];
+		
+        // get signature
+        NSData *hmac = AFHMACSHA1EncodedDataFromStringWithKey(stringToSign, self.secret);
+        NSString *signature = AFBase64EncodedStringFromData(hmac);
+		
+        // add date and signature
+        [request setValue:date forHTTPHeaderField:@"Date"];
+        [request setValue:[NSString stringWithFormat:@"AWS %@:%@", self.accessKey, signature] forHTTPHeaderField:@"Authorization"];
+    }
 }
 
 @end
-
