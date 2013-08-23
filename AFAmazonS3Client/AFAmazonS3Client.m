@@ -214,7 +214,7 @@ NSString * AFBase64EncodedStringFromData(NSData *data) {
         NSString *signature = AFBase64EncodedStringFromData(hmac);
 
         return @{@"Authorization": [NSString stringWithFormat:@"AWS %@:%@", self.accessKey, signature],
-                 @"Date": date
+                 @"Date": (date) ? date : @""
                 };
     }
 
