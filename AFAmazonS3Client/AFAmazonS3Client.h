@@ -54,6 +54,15 @@
                    secret:(NSString *)secret;
 
 /**
+ Returns the AWS authorization HTTP header fields for the specified request.
+
+ @param request The request.
+ 
+ @return A dictionary of HTTP header fields values for `Authorization` and `Date`.
+ */
+- (NSDictionary *)authorizationHeadersForRequest:(NSMutableURLRequest *)request;
+
+/**
  Creates and enqueues a request operation to the client's operation queue.
  
  @param method The HTTP method for the request.
@@ -208,13 +217,6 @@
 - (void)deleteObjectWithPath:(NSString *)path
                      success:(void (^)(id responseObject))success
                      failure:(void (^)(NSError *error))failure;
-
-/**
- Appends the AWS authorization header to a request.
- 
- @param request The request to append the authorization header to
- */
-- (void)appendAuthorizationHeaderToRequest:(NSMutableURLRequest *)request;
 
 @end
 

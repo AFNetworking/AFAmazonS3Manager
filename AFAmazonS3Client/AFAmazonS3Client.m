@@ -143,6 +143,51 @@ NSString * AFBase64EncodedStringFromData(NSData *data) {
     [self didChangeValueForKey:@"baseURL"];
 }
 
+- (NSDictionary *)authorizationHeadersForRequest:(NSMutableURLRequest *)request {
+    if (self.accessKey && self.secret) {
+        // Long header values that are subject to "folding" should split into new lines according to AWS's documentation.
+		NSMutableDictionary *mutableAMZHeaderFields = [NSMutableDictionary dictionary];
+		[[request allHTTPHeaderFields] enumerateKeysAndObjectsUsingBlock:^(NSString *key, id value, BOOL *stop) {
+			key = [key lowercaseString];
+			if ([key hasPrefix:@"x-amz"]) {
+				if ([mutableAMZHeaderFields objectForKey:key]) {
+					value = [[mutableAMZHeaderFields objectForKey:key] stringByAppendingFormat:@",%@", value];
+				}
+				[mutableAMZHeaderFields setObject:value forKey:key];
+			}
+		}];
+
+		NSMutableString *mutableCanonicalizedAMZHeaderString = [NSMutableString string];
+		for (NSString *key in [[mutableAMZHeaderFields allKeys] sortedArrayUsingSelector:@selector(compare:)]) {
+            id value = [mutableAMZHeaderFields objectForKey:key];
+			[mutableCanonicalizedAMZHeaderString appendFormat:@"%@:%@\n", key, value];
+		}
+
+        NSString *canonicalizedResource = [NSString stringWithFormat:@"/%@%@", self.bucket, request.URL.path];
+    	NSString *method = [request HTTPMethod];
+		NSString *contentMD5 = [request valueForHTTPHeaderField:@"Content-MD5"];
+		NSString *contentType = [request valueForHTTPHeaderField:@"Content-Type"];
+		NSString *date = AFRFC822FormatStringFromDate([NSDate date]);
+
+		NSMutableString *mutableString = [NSMutableString string];
+		[mutableString appendFormat:@"%@\n", (method) ? method : @""];
+		[mutableString appendFormat:@"%@\n", (contentMD5) ? contentMD5 : @""];
+		[mutableString appendFormat:@"%@\n", (contentType) ? contentType : @""];
+		[mutableString appendFormat:@"%@\n", (date) ? date : @""];
+		[mutableString appendFormat:@"%@", mutableCanonicalizedAMZHeaderString];
+		[mutableString appendFormat:@"%@", canonicalizedResource];
+
+        NSData *hmac = AFHMACSHA1EncodedDataFromStringWithKey(mutableString, self.secret);
+        NSString *signature = AFBase64EncodedStringFromData(hmac);
+
+        return @{@"Authorization": [NSString stringWithFormat:@"AWS %@:%@", self.accessKey, signature],
+                 @"Date": date
+                };
+    }
+
+    return nil;
+}
+
 #pragma mark -
 
 - (void)enqueueS3RequestOperationWithMethod:(NSString *)method
@@ -166,23 +211,6 @@ NSString * AFBase64EncodedStringFromData(NSData *data) {
     [self enqueueHTTPRequestOperation:requestOperation];
 }
 
-- (void)authorizeRequest:(NSMutableURLRequest *)request withPath:(NSString *)path {
-    if (self.accessKey && self.secret) {
-        NSString *canonicalizedResource = [NSString stringWithFormat:@"/%@%@", self.bucket, path];
-        NSString *date = AFRFC822FormatStringFromDate([NSDate date]);
-        NSString *stringToSign = [NSString stringWithFormat:@"%@\n\n%@\n%@\n%@",
-                                  request.HTTPMethod,
-                                  
-                                  request.allHTTPHeaderFields[@"Content-Type"] == nil ? @"" : request.allHTTPHeaderFields[@"Content-Type"],
-                                  date,
-                                  canonicalizedResource];
-        NSData *hmac = AFHMACSHA1EncodedDataFromStringWithKey(stringToSign, self.secret);
-        NSString *signature = AFBase64EncodedStringFromData(hmac);
-        
-        [request setValue:date forHTTPHeaderField:@"Date"];
-        [request setValue:[NSString stringWithFormat:@"AWS %@:%@", self.accessKey, signature] forHTTPHeaderField:@"Authorization"];
-    }
-}
 
 #pragma mark Service Operations
 
@@ -311,16 +339,14 @@ NSString * AFBase64EncodedStringFromData(NSData *data) {
     [fileRequest setCachePolicy:NSURLCacheStorageNotAllowed];
 	
     NSURLResponse *response = nil;
-    NSError *error = nil;
-    NSData *data = [NSURLConnection sendSynchronousRequest:fileRequest returningResponse:&response error:&error];
+    NSError *fileError = nil;
+    NSData *data = [NSURLConnection sendSynchronousRequest:fileRequest returningResponse:&response error:&fileError];
 	
     if (data && response) {
         NSMutableURLRequest *request = [self multipartFormRequestWithMethod:method path:destinationPath parameters:parameters constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
             [formData appendPartWithFormData:[[filePath lastPathComponent] dataUsingEncoding:NSUTF8StringEncoding] name:@"key"];
             [formData appendPartWithFileData:data name:@"file" fileName:[filePath lastPathComponent] mimeType:[response MIMEType]];
         }];
-
-        [self appendAuthorizationHeaderToRequest:request];
 		
         AFHTTPRequestOperation *requestOperation = [self HTTPRequestOperationWithRequest:request success:^(AFHTTPRequestOperation *operation, id responseObject) {
             if (success) {
@@ -340,60 +366,17 @@ NSString * AFBase64EncodedStringFromData(NSData *data) {
 
 #pragma mark - AFHTTPClient
 
-- (NSMutableURLRequest *)requestWithMethod:(NSString *)method path:(NSString *)path parameters:(NSDictionary *)parameters {
+- (NSMutableURLRequest *)requestWithMethod:(NSString *)method
+                                      path:(NSString *)path
+                                parameters:(NSDictionary *)parameters
+{
 	NSMutableURLRequest *request = [super requestWithMethod:method path:path parameters:parameters];
-	[self appendAuthorizationHeaderToRequest:request];
-	return request;
-}
 
-- (void)appendAuthorizationHeaderToRequest:(NSMutableURLRequest *)request {
-    if (self.accessKey && self.secret) {
-		/**
-		 * canonicalize the AMZ headers
-		 * NOTE: this is not 100% complete as long header values that are subject to "folding" should
-		 * split into new lines according to AWS's documentation. This should cover about 95% of all requests
-		 * though and is better than having no support for it at all.
-		 */
-		NSMutableDictionary *amzHeaderFields = [NSMutableDictionary dictionary];
-		[[request allHTTPHeaderFields] enumerateKeysAndObjectsUsingBlock:^(NSString *key, id value, BOOL *stop) {
-			key = [key lowercaseString];
-			if([key hasPrefix:@"x-amz"]) {
-				if([amzHeaderFields objectForKey:key]) {
-					value = [[amzHeaderFields objectForKey:key] stringByAppendingFormat:@",%@", value];
-				}
-				[amzHeaderFields setObject:value forKey:key];
-			}
-		}];
-		NSArray *amzHeaderFieldsKeysSorted = [amzHeaderFields.allKeys sortedArrayUsingSelector:@selector(compare:)];
-		NSMutableString *canonicalizedAMZHeaders = [NSMutableString string];
-		for(NSString *key in amzHeaderFieldsKeysSorted) {
-			[canonicalizedAMZHeaders appendFormat:@"%@:%@\n", key, amzHeaderFields[key]];
-		}
-		
-		// collect other parameters for signatures
-        NSString *canonicalizedResource = [NSString stringWithFormat:@"/%@%@", self.bucket, request.URL.path];
-    	NSString *method = [request HTTPMethod];
-		NSString *contentMD5 = [request valueForHTTPHeaderField:@"Content-MD5"];
-		NSString *contentType = [request valueForHTTPHeaderField:@"Content-Type"];
-		NSString *date = AFRFC822FormatStringFromDate([NSDate date]);
-		
-        // construct string to sign
-		NSMutableString *stringToSign = [NSMutableString string];
-		[stringToSign appendFormat:@"%@\n", (method) ? method : @""];
-		[stringToSign appendFormat:@"%@\n", (contentMD5) ? contentMD5 : @""];
-		[stringToSign appendFormat:@"%@\n", (contentType) ? contentType : @""];
-		[stringToSign appendFormat:@"%@\n", (date) ? date : @""];
-		[stringToSign appendFormat:@"%@", (canonicalizedAMZHeaders) ? canonicalizedAMZHeaders : @""];
-		[stringToSign appendFormat:@"%@", canonicalizedResource];
-		
-        // get signature
-        NSData *hmac = AFHMACSHA1EncodedDataFromStringWithKey(stringToSign, self.secret);
-        NSString *signature = AFBase64EncodedStringFromData(hmac);
-		
-        // add date and signature
-        [request setValue:date forHTTPHeaderField:@"Date"];
-        [request setValue:[NSString stringWithFormat:@"AWS %@:%@", self.accessKey, signature] forHTTPHeaderField:@"Authorization"];
-    }
+    [[self authorizationHeadersForRequest:request] enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL *stop) {
+        [request setValue:value forHTTPHeaderField:field];
+    }];
+
+    return request;
 }
 
 @end
