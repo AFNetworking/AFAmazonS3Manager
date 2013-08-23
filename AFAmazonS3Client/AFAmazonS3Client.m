@@ -22,6 +22,7 @@
 // THE SOFTWARE.
 
 #import <CommonCrypto/CommonHMAC.h>
+
 #import "AFAmazonS3Client.h"
 #import "AFXMLRequestOperation.h"
 
@@ -44,7 +45,7 @@ static NSData * AFHMACSHA1EncodedDataFromStringWithKey(NSString *string, NSStrin
     return [NSData dataWithBytes:digestRaw length:digestLength];
 }
 
-static NSString *AFRFC822FormatStringFromDate(NSDate *date) {
+static NSString * AFRFC822FormatStringFromDate(NSDate *date) {
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
     [dateFormatter setTimeZone:[NSTimeZone timeZoneWithName:@"GMT"]];
     [dateFormatter setDateFormat:@"EEE, dd MMM yyyy HH:mm:ss z"];
