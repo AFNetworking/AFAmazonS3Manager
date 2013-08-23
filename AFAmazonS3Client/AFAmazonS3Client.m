@@ -26,8 +26,28 @@
 #import "AFAmazonS3Client.h"
 #import "AFXMLRequestOperation.h"
 
-NSString * const kAFAmazonS3BaseURLString = @"http://s3.amazonaws.com";
-NSString * const kAFAmazonS3BucketBaseURLFormatString = @"http://%@.s3.amazonaws.com";
+static NSString * const AFAmazonS3ClientDefaultBaseURLString = @"http://s3.amazonaws.com";
+
+NSString * const AFAmazonS3USStandardRegion = @"s3.amazonaws.com";
+NSString * const AFAmazonS3USWest1Region = @"s3-us-west-1.amazonaws.com";
+NSString * const AFAmazonS3USWest2Region = @"s3-us-west-2.amazonaws.com";
+NSString * const AFAmazonS3EUWest1Region = @"s3-eu-west-1.amazonaws.com";
+NSString * const AFAmazonS3APSoutheast1Region = @"s3-ap-southeast-1.amazonaws.com";
+NSString * const AFAmazonS3APSoutheast2Region = @"s3-ap-southeast-2.amazonaws.com";
+NSString * const AFAmazonS3APNortheast2Region = @"s3-ap-northeast-1.amazonaws.com";
+NSString * const AFAmazonS3SAEast1Region = @"s3-sa-east-1.amazonaws.com";
+
+static NSString * AFAmazonS3BaseURLStringWithBucketInRegion(NSString *bucket, NSString *region) {
+    if (!region) {
+        region = AFAmazonS3USStandardRegion;
+    }
+
+    if (!bucket) {
+        return [NSString stringWithFormat:@"http://%@", region];
+    } else {
+        return [NSString stringWithFormat:@"http://%@.%@", bucket, region];
+    }
+}
 
 static NSData * AFHMACSHA1EncodedDataFromStringWithKey(NSString *string, NSString *key) {
     NSData *data = [string dataUsingEncoding:NSASCIIStringEncoding];
@@ -100,16 +120,20 @@ NSString * AFBase64EncodedStringFromData(NSData *data) {
 @implementation AFAmazonS3Client
 @synthesize baseURL = _s3_baseURL;
 @synthesize bucket = _bucket;
+@synthesize region = _region;
 @synthesize accessKey = _accessKey;
 @synthesize secret = _secret;
 
 - (id)initWithAccessKeyID:(NSString *)accessKey
                    secret:(NSString *)secret
 {
-    self = [self initWithBaseURL:[NSURL URLWithString:kAFAmazonS3BaseURLString]];
+    self = [self initWithBaseURL:[NSURL URLWithString:AFAmazonS3ClientDefaultBaseURLString]];
     if (!self) {
         return nil;
     }
+
+    // Workaround for designated initializer of subclass
+    self.baseURL = nil;
 	
     self.accessKey = accessKey;
     self.secret = secret;
@@ -129,8 +153,8 @@ NSString * AFBase64EncodedStringFromData(NSData *data) {
 }
 
 - (NSURL *)baseURL {
-    if (_s3_baseURL && self.bucket) {
-        return [NSURL URLWithString:[NSString stringWithFormat:kAFAmazonS3BucketBaseURLFormatString, self.bucket]];
+    if (!_s3_baseURL) {
+        return [NSURL URLWithString:AFAmazonS3BaseURLStringWithBucketInRegion(self.bucket, self.region)];
     }
 	
     return _s3_baseURL;
@@ -141,6 +165,14 @@ NSString * AFBase64EncodedStringFromData(NSData *data) {
     [self willChangeValueForKey:@"bucket"];
     _bucket = bucket;
     [self didChangeValueForKey:@"bucket"];
+    [self didChangeValueForKey:@"baseURL"];
+}
+
+- (void)setRegion:(NSString *)region {
+    [self willChangeValueForKey:@"baseURL"];
+    [self willChangeValueForKey:@"region"];
+    _region = region;
+    [self didChangeValueForKey:@"region"];
     [self didChangeValueForKey:@"baseURL"];
 }
 
