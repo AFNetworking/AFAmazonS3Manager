@@ -392,7 +392,8 @@ NSString * AFBase64EncodedStringFromData(NSData *data) {
             [formData appendPartWithFileData:data name:@"file" fileName:[filePath lastPathComponent] mimeType:[response MIMEType]];
         }];
 		[self setAuthorizationHeaders:request];
-        
+        [request setHTTPBody:data];
+
         AFHTTPRequestOperation *requestOperation = [self HTTPRequestOperationWithRequest:request success:^(AFHTTPRequestOperation *operation, id responseObject) {
             if (success) {
                 success(responseObject);
