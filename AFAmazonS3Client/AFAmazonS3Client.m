@@ -386,6 +386,17 @@ static NSString * AFBase64EncodedStringFromData(NSData *data) {
     return request;
 }
 
+- (NSMutableURLRequest *)multipartFormRequestWithMethod:(NSString *)method
+                                                   path:(NSString *)path
+                                             parameters:(NSDictionary *)parameters
+                              constructingBodyWithBlock:(void (^)(id<AFMultipartFormData>))block
+{
+    NSMutableURLRequest *request = [super multipartFormRequestWithMethod:method path:path parameters:parameters constructingBodyWithBlock:block];
+    [[self authorizationHeadersForRequest:request] enumerateKeysAndObjectsUsingBlock:^(NSString *field, NSString *value, __unused BOOL *stop) {
+        [request setValue:value forHTTPHeaderField:field];
+    }];
+}
+
 #pragma mark - NSKeyValueObserving
 
 + (NSSet *)keyPathsForValuesAffectingBaseURL {
