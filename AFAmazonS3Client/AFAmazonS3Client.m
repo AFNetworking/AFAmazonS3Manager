@@ -111,10 +111,6 @@ static NSString * AFBase64EncodedStringFromData(NSData *data) {
 
 @implementation AFAmazonS3Client
 @synthesize baseURL = _s3_baseURL;
-@synthesize bucket = _bucket;
-@synthesize region = _region;
-@synthesize accessKey = _accessKey;
-@synthesize secret = _secret;
 
 - (id)initWithAccessKeyID:(NSString *)accessKey
                    secret:(NSString *)secret
