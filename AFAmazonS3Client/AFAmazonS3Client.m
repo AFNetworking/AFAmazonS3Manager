@@ -107,14 +107,6 @@ static NSString * AFBase64EncodedStringFromData(NSData *data) {
 @interface AFAmazonS3Client ()
 @property (readwrite, nonatomic, copy) NSString *accessKey;
 @property (readwrite, nonatomic, copy) NSString *secret;
-
-- (void)setObjectWithMethod:(NSString *)method
-                       file:(NSString *)filePath
-            destinationPath:(NSString *)destinationPath
-                 parameters:(NSDictionary *)parameters
-                   progress:(void (^)(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite))progressBlock
-                    success:(void (^)(id responseObject))success
-                    failure:(void (^)(NSError *error))failure;
 @end
 
 @implementation AFAmazonS3Client
