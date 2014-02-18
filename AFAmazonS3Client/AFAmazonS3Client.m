@@ -221,12 +221,6 @@ NSString * AFBase64EncodedStringFromData(NSData *data) {
     return nil;
 }
 
-- (void)setAuthorizationHeaders:(NSMutableURLRequest *)request {
-    [[self authorizationHeadersForRequest:request] enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL *stop) {
-        [request setValue:value forHTTPHeaderField:field];
-    }];
-}
-
 #pragma mark -
 
 - (void)enqueueS3RequestOperationWithMethod:(NSString *)method
@@ -236,8 +230,6 @@ NSString * AFBase64EncodedStringFromData(NSData *data) {
                                     failure:(void (^)(NSError *error))failure
 {
     NSMutableURLRequest *request = [self requestWithMethod:method path:path parameters:parameters];
-    [self setAuthorizationHeaders:request];
-    
     AFHTTPRequestOperation *requestOperation = [self HTTPRequestOperationWithRequest:request success:^(AFHTTPRequestOperation *operation, id responseObject) {
         if (success) {
             success(responseObject);
@@ -300,8 +292,6 @@ NSString * AFBase64EncodedStringFromData(NSData *data) {
                   failure:(void (^)(NSError *error))failure
 {
     NSMutableURLRequest *request = [self requestWithMethod:@"GET" path:path parameters:nil];
-    [self setAuthorizationHeaders:request];
-    
     AFHTTPRequestOperation *requestOperation = [self HTTPRequestOperationWithRequest:request success:^(AFHTTPRequestOperation *operation, id responseObject) {
         if (success) {
             success(responseObject, operation.responseData);
@@ -324,8 +314,6 @@ NSString * AFBase64EncodedStringFromData(NSData *data) {
                   failure:(void (^)(NSError *error))failure
 {
     NSMutableURLRequest *request = [self requestWithMethod:@"GET" path:path parameters:nil];
-    [self setAuthorizationHeaders:request];
-    
     AFHTTPRequestOperation *requestOperation = [self HTTPRequestOperationWithRequest:request success:^(AFHTTPRequestOperation *operation, id responseObject) {
         if (success) {
             success(responseObject);
@@ -391,7 +379,6 @@ NSString * AFBase64EncodedStringFromData(NSData *data) {
             }
             [formData appendPartWithFileData:data name:@"file" fileName:[filePath lastPathComponent] mimeType:[response MIMEType]];
         }];
-		[self setAuthorizationHeaders:request];
         [request setHTTPBody:data];
 
         AFHTTPRequestOperation *requestOperation = [self HTTPRequestOperationWithRequest:request success:^(AFHTTPRequestOperation *operation, id responseObject) {
@@ -408,6 +395,20 @@ NSString * AFBase64EncodedStringFromData(NSData *data) {
 		
         [self enqueueHTTPRequestOperation:requestOperation];
     }
+}
+
+#pragma mark - AFHTTPClient
+
+- (NSMutableURLRequest *)requestWithMethod:(NSString *)method
+                                      path:(NSString *)path
+                                parameters:(NSDictionary *)parameters
+{
+    NSMutableURLRequest *request = [super requestWithMethod:method path:path parameters];
+    [[self authorizationHeadersForRequest:request] enumerateKeysAndObjectsUsingBlock:^(NSString *field, NSString *value, __unused BOOL *stop) {
+        [request setValue:value forHTTPHeaderField:field];
+    }];
+
+    return request;
 }
 
 @end
