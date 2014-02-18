@@ -37,15 +37,16 @@ NSString * const AFAmazonS3APSoutheast2Region = @"s3-ap-southeast-2.amazonaws.co
 NSString * const AFAmazonS3APNortheast2Region = @"s3-ap-northeast-1.amazonaws.com";
 NSString * const AFAmazonS3SAEast1Region = @"s3-sa-east-1.amazonaws.com";
 
-static NSString * AFAmazonS3BaseURLStringWithBucketInRegion(NSString *bucket, NSString *region) {
+static NSString * AFAmazonS3BaseURLStringWithBucketInRegion(NSString *bucket, NSString *region, BOOL useSSL) {
     if (!region) {
         region = AFAmazonS3USStandardRegion;
     }
 
+    NSString *scheme = useSSL ? @"https" : @"http";
     if (!bucket) {
-        return [NSString stringWithFormat:@"http://%@", region];
+        return [NSString stringWithFormat:@"%@://%@", scheme, region];
     } else {
-        return [NSString stringWithFormat:@"http://%@.%@", bucket, region];
+        return [NSString stringWithFormat:@"%@://%@.%@", scheme, bucket, region];
     }
 }
 
@@ -122,10 +123,12 @@ static NSString * AFBase64EncodedStringFromData(NSData *data) {
 
     // Workaround for designated initializer of subclass
     self.baseURL = nil;
-	
+
     self.accessKey = accessKey;
     self.secret = secret;
-	
+
+    self.useSSL = YES;
+
     return self;
 }
 
@@ -142,7 +145,7 @@ static NSString * AFBase64EncodedStringFromData(NSData *data) {
 
 - (NSURL *)baseURL {
     if (!_s3_baseURL) {
-        return [NSURL URLWithString:AFAmazonS3BaseURLStringWithBucketInRegion(self.bucket, self.region)];
+        return [NSURL URLWithString:AFAmazonS3BaseURLStringWithBucketInRegion(self.bucket, self.region, self.useSSL)];
     }
 	
     return _s3_baseURL;
@@ -386,15 +389,7 @@ static NSString * AFBase64EncodedStringFromData(NSData *data) {
 #pragma mark - NSKeyValueObserving
 
 + (NSSet *)keyPathsForValuesAffectingBaseURL {
-    return [NSSet setWithObjects:@"baseURL", @"bucket", @"region", nil];
-}
-
-+ (NSSet *)keyPathsForValuesAffectingBucket {
-    return [NSSet setWithObjects:@"bucket", @"region", nil];
-}
-
-+ (NSSet *)keyPathsForValuesAffectingRegion {
-    return [NSSet setWithObjects:@"bucket", @"region", nil];
+    return [NSSet setWithObjects:@"baseURL", @"bucket", @"region", @"useSSL", nil];
 }
 
 @end

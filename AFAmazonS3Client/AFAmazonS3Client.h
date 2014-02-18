@@ -31,7 +31,7 @@
 /**
  The base URL for the HTTP client.
  
- @discussion By default, the `baseURL` of `AFAmazonS3Client` is derived from the `bucket` and `region` values. If `baseURL` is set directly, it will override the default `baseURL` and disregard any `bucket` or `region` property.
+ @discussion By default, the `baseURL` of `AFAmazonS3Client` is derived from the `bucket` and `region` values. If `baseURL` is set directly, it will override the default `baseURL` and disregard values set for the `bucket`, `region`, and `useSSL` properties.
  */
 @property (nonatomic, strong) NSURL *baseURL;
 
@@ -48,6 +48,13 @@
  @see `AFAmazonS3Client -baseURL`
  */
 @property (nonatomic, copy) NSString *region;
+
+/**
+ Whether to connect over HTTPS. `YES` by default.
+ 
+ @see `AFAmazonS3Client -baseURL`
+ */
+@property (nonatomic, assign) BOOL useSSL;
 
 /**
  Initializes and returns a newly allocated Amazon S3 client with specified credentials.
