@@ -385,6 +385,10 @@ static NSString * AFBase64EncodedStringFromData(NSData *data) {
 
 #pragma mark - NSKeyValueObserving
 
++ (NSSet *)keyPathsForValuesAffectingBaseURL {
+    return [NSSet setWithObjects:@"baseURL", @"bucket", @"region", nil];
+}
+
 + (NSSet *)keyPathsForValuesAffectingBucket {
     return [NSSet setWithObjects:@"bucket", @"region", nil];
 }
