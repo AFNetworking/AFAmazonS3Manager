@@ -74,7 +74,7 @@ static NSString * AFRFC822FormatStringFromDate(NSDate *date) {
     return [dateFormatter stringFromDate:date];
 }
 
-NSString * AFBase64EncodedStringFromData(NSData *data) {
+static NSString * AFBase64EncodedStringFromData(NSData *data) {
     NSUInteger length = [data length];
     NSMutableData *mutableData = [NSMutableData dataWithLength:((length + 2) / 3) * 4];
     
