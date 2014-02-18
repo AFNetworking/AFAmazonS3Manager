@@ -160,22 +160,6 @@ NSString * AFBase64EncodedStringFromData(NSData *data) {
     return _s3_baseURL;
 }
 
-- (void)setBucket:(NSString *)bucket {
-    [self willChangeValueForKey:@"baseURL"];
-    [self willChangeValueForKey:@"bucket"];
-    _bucket = bucket;
-    [self didChangeValueForKey:@"bucket"];
-    [self didChangeValueForKey:@"baseURL"];
-}
-
-- (void)setRegion:(NSString *)region {
-    [self willChangeValueForKey:@"baseURL"];
-    [self willChangeValueForKey:@"region"];
-    _region = region;
-    [self didChangeValueForKey:@"region"];
-    [self didChangeValueForKey:@"baseURL"];
-}
-
 - (NSDictionary *)authorizationHeadersForRequest:(NSMutableURLRequest *)request {
     if (self.accessKey && self.secret) {
         // Long header values that are subject to "folding" should split into new lines according to AWS's documentation.
@@ -409,6 +393,16 @@ NSString * AFBase64EncodedStringFromData(NSData *data) {
     }];
 
     return request;
+}
+
+#pragma mark - NSKeyValueObserving
+
++ (NSSet *)keyPathsForValuesAffectingBucket {
+    return [NSSet setWithObjects:@"bucket", @"region", nil];
+}
+
++ (NSSet *)keyPathsForValuesAffectingRegion {
+    return [NSSet setWithObjects:@"bucket", @"region", nil];
 }
 
 @end
