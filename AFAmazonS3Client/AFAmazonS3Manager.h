@@ -1,7 +1,6 @@
+// AFAmazonS3Manager.h
 //
-// AFAmazonS3Client.h
-//
-// Copyright (c) 2012 Mattt Thompson (http://mattt.me/)
+// Copyright (c) 2014 Mattt Thompson (http://mattt.me/)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,40 +20,25 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#import "AFHTTPClient.h"
+#import "AFHTTPRequestOperationManager.h"
+#import "AFAmazonS3RequestSerializer.h"
 
 /**
  AFAmazonS3Client` is an `AFHTTPClient` subclass for interacting with the Amazon S3 webservice API (http://aws.amazon.com/s3/).
  */
-@interface AFAmazonS3Client : AFHTTPClient
+@interface AFAmazonS3Manager : AFHTTPRequestOperationManager
 
 /**
- The base URL for the HTTP client.
- 
+ The base URL for the S3 manager.
+
  @discussion By default, the `baseURL` of `AFAmazonS3Client` is derived from the `bucket` and `region` values. If `baseURL` is set directly, it will override the default `baseURL` and disregard values set for the `bucket`, `region`, and `useSSL` properties.
  */
-@property (nonatomic, strong) NSURL *baseURL;
+@property (readonly, nonatomic, strong) NSURL *baseURL;
 
 /**
- The S3 bucket for the client. `nil` by default.
  
- @see `AFAmazonS3Client -baseURL`
  */
-@property (nonatomic, copy) NSString *bucket;
-
-/**
- The AWS region for the client. `AFAmazonS3USStandardRegion` by default. See "AWS Regions" for defined constant values.
-
- @see `AFAmazonS3Client -baseURL`
- */
-@property (nonatomic, copy) NSString *region;
-
-/**
- Whether to connect over HTTPS. `YES` by default.
- 
- @see `AFAmazonS3Client -baseURL`
- */
-@property (nonatomic, assign) BOOL useSSL;
+@property (nonatomic, strong) AFAmazonS3RequestSerializer <AFURLRequestSerialization> * requestSerializer;
 
 /**
  Initializes and returns a newly allocated Amazon S3 client with specified credentials.
@@ -66,15 +50,6 @@
  */
 - (id)initWithAccessKeyID:(NSString *)accessKey
                    secret:(NSString *)secret;
-
-/**
- Returns the AWS authorization HTTP header fields for the specified request.
-
- @param request The request.
- 
- @return A dictionary of HTTP header fields values for `Authorization` and `Date`.
- */
-- (NSDictionary *)authorizationHeadersForRequest:(NSMutableURLRequest *)request;
 
 /**
  Creates and enqueues a request operation to the client's operation queue.
@@ -136,7 +111,6 @@
  Deletes the specified bucket. All objects in the bucket must be deleted before the bucket itself can be deleted.
  
  @param bucket The S3 bucket to be delete.
- @param parameters The parameters to be encoded and set in the request HTTP body.
  @param success A block object to be executed when the request operation finishes successfully. This block has no return value and takes a single argument: the response object from the server.
  @param failure A block object to be executed when the request operation finishes unsuccessfully, or that finishes successfully, but encountered an error while parsing the response data. This block has no return value and takes a single argument: the `NSError` object describing error that occurred.
  */
@@ -156,7 +130,7 @@
  @param failure A block object to be executed when the request operation finishes unsuccessfully, or that finishes successfully, but encountered an error while parsing the response data. This block has no return value and takes a single argument: the `NSError` object describing error that occurred.
  */
 - (void)headObjectWithPath:(NSString *)path
-                   success:(void (^)(id responseObject))success
+                   success:(void (^)(NSHTTPURLResponse *response))success
                    failure:(void (^)(NSError *error))failure;
 
 /**
@@ -239,26 +213,9 @@
 ///----------------
 
 /**
- ## AWS Regions
+ ## Error Domain
 
- The following AWS regions are defined:
-
- `AFAmazonS3USStandardRegion`: US Standard (s3.amazonaws.com);
- `AFAmazonS3USWest1Region`: US West (Oregon) Region (s3-us-west-1.amazonaws.com)
- `AFAmazonS3USWest2Region`: US West (Northern California) Region (s3-us-west-2.amazonaws.com)
- `AFAmazonS3EUWest1Region`: EU (Ireland) Region (s3-eu-west-1.amazonaws.com)
- `AFAmazonS3APSoutheast1Region`: Asia Pacific (Singapore) Region (s3-ap-southeast-1.amazonaws.com)
- `AFAmazonS3APSoutheast2Region`: Asia Pacific (Sydney) Region (s3-ap-southeast-2.amazonaws.com)
- `AFAmazonS3APNortheast2Region`: Asia Pacific (Tokyo) Region (s3-ap-northeast-1.amazonaws.com)
- `AFAmazonS3SAEast1Region`: South America (Sao Paulo) Region (s3-sa-east-1.amazonaws.com)
-
- For a full list of available regions, see http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
+ `AFAmazonS3ManagerErrorDomain`
+ AFAmazonS3Manager errors. Error codes for `AFAmazonS3ManagerErrorDomain` correspond to codes in `NSURLErrorDomain`.
  */
-extern NSString * const AFAmazonS3USStandardRegion;
-extern NSString * const AFAmazonS3USWest1Region;
-extern NSString * const AFAmazonS3USWest2Region;
-extern NSString * const AFAmazonS3EUWest1Region;
-extern NSString * const AFAmazonS3APSoutheast1Region;
-extern NSString * const AFAmazonS3APSoutheast2Region;
-extern NSString * const AFAmazonS3APNortheast2Region;
-extern NSString * const AFAmazonS3SAEast1Region;
+extern NSString * const AFAmazonS3ManagerErrorDomain;
