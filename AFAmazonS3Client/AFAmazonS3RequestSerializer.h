@@ -22,6 +22,9 @@
 
 #import "AFURLRequestSerialization.h"
 
+/**
+ `AFAmazonS3RequestSerializer` is an `AFHTTPRequestSerializer` subclass with convenience methods for creating requests for the Amazon S3 webservice, including creating an authorization header and building an endpoint URL for a given bucket, region, and TLS preferences.
+ */
 @interface AFAmazonS3RequestSerializer : AFHTTPRequestSerializer
 
 /**
@@ -46,13 +49,17 @@
 @property (nonatomic, assign) BOOL useSSL;
 
 /**
- 
+ A readonly endpoint URL created for the specified bucket, region, and TLS preference. `AFAmazonS3Manager` uses this as a `baseURL` unless one is manually specified.
  */
-@property (readonly, nonatomic, copy) NSURL *baseURL;
-
+@property (readonly, nonatomic, copy) NSURL *endpointURL;
 
 /**
+ Sets the access key ID and secret, used to generate authorization headers.
+ 
+ @param accessKey The Amazon S3 Access Key ID.
+ @param secret The Amazon S3 Secret.
 
+ @discussion These values can be found on the AWS control panel: http://aws-portal.amazon.com/gp/aws/developer/account/index.html?action=access-key
  */
 - (void)setAccessKeyID:(NSString *)accessKey
                 secret:(NSString *)secret;
@@ -64,7 +71,8 @@
 
  @return A dictionary of HTTP header fields values for `Authorization` and `Date`.
  */
-- (NSDictionary *)authorizationHeadersForRequest:(NSMutableURLRequest *)request;
+- (NSURLRequest *)requestBySettingAuthorizationHeadersForRequest:(NSURLRequest *)request
+                                                           error:(NSError * __autoreleasing *)error;
 
 @end
 

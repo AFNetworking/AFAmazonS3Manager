@@ -20,10 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#import "AFAmazonS3RequestSerializer.h"
 #import "AFHTTPRequestOperationManager.h"
-
-@class AFAmazonS3RequestSerializer;
+#import "AFAmazonS3RequestSerializer.h"
 
 /**
  AFAmazonS3Client` is an `AFHTTPClient` subclass for interacting with the Amazon S3 webservice API (http://aws.amazon.com/s3/).
@@ -132,7 +130,7 @@
  @param failure A block object to be executed when the request operation finishes unsuccessfully, or that finishes successfully, but encountered an error while parsing the response data. This block has no return value and takes a single argument: the `NSError` object describing error that occurred.
  */
 - (void)headObjectWithPath:(NSString *)path
-                   success:(void (^)(id responseObject))success
+                   success:(void (^)(NSHTTPURLResponse *response))success
                    failure:(void (^)(NSError *error))failure;
 
 /**
@@ -209,3 +207,15 @@
                      failure:(void (^)(NSError *error))failure;
 
 @end
+
+///----------------
+/// @name Constants
+///----------------
+
+/**
+ ## Error Domain
+
+ `AFAmazonS3ManagerErrorDomain`
+ AFAmazonS3Manager errors. Error codes for `AFAmazonS3ManagerErrorDomain` correspond to codes in `NSURLErrorDomain`.
+ */
+extern NSString * const AFAmazonS3ManagerErrorDomain;

@@ -21,10 +21,9 @@
 // THE SOFTWARE.
 
 #import "AFAmazonS3RequestSerializer.h"
+#import "AFAmazonS3Manager.h"
 
 #import <CommonCrypto/CommonHMAC.h>
-
-static NSString * const AFAmazonS3ClientDefaultBaseURLString = @"http://s3.amazonaws.com";
 
 NSString * const AFAmazonS3USStandardRegion = @"s3.amazonaws.com";
 NSString * const AFAmazonS3USWest1Region = @"s3-us-west-1.amazonaws.com";
@@ -117,7 +116,12 @@ static NSString * AFBase64EncodedStringFromData(NSData *data) {
     self.secret = secret;
 }
 
-- (NSURL *)baseURL {
+- (void)setRegion:(NSString *)region {
+    NSParameterAssert(region);
+    _region = region;
+}
+
+- (NSURL *)endpointURL {
     NSString *URLString = nil;
     NSString *scheme = self.useSSL ? @"https" : @"http";
     if (self.bucket) {
@@ -129,16 +133,14 @@ static NSString * AFBase64EncodedStringFromData(NSData *data) {
     return [NSURL URLWithString:URLString];
 }
 
-- (void)setRegion:(NSString *)region {
-    NSParameterAssert(region);
-    _region = region;
-}
-
 #pragma mark -
 
-- (NSDictionary *)authorizationHeadersForRequest:(NSMutableURLRequest *)request {
+- (NSURLRequest *)requestBySettingAuthorizationHeadersForRequest:(NSURLRequest *)request
+                                                           error:(NSError * __autoreleasing *)error
+{
+    NSMutableURLRequest *mutableRequest = [request mutableCopy];
+
     if (self.accessKey && self.secret) {
-        // Long header values that are subject to "folding" should split into new lines according to AWS's documentation.
 		NSMutableDictionary *mutableAMZHeaderFields = [NSMutableDictionary dictionary];
 		[[request allHTTPHeaderFields] enumerateKeysAndObjectsUsingBlock:^(NSString *key, id value, __unused BOOL *stop) {
 			key = [key lowercaseString];
@@ -173,12 +175,16 @@ static NSString * AFBase64EncodedStringFromData(NSData *data) {
         NSData *hmac = AFHMACSHA1EncodedDataFromStringWithKey(mutableString, self.secret);
         NSString *signature = AFBase64EncodedStringFromData(hmac);
 
-        return @{@"Authorization": [NSString stringWithFormat:@"AWS %@:%@", self.accessKey, signature],
-                 @"Date": (date) ? date : @""
-                 };
+        [mutableRequest setValue:[NSString stringWithFormat:@"AWS %@:%@", self.accessKey, signature] forHTTPHeaderField:@"Authorization"];
+        [mutableRequest setValue:(date) ? date : @"" forHTTPHeaderField:@"Date"];
+    } else {
+        if (error) {
+            NSDictionary *userInfo = @{NSLocalizedDescriptionKey: NSLocalizedStringFromTable(@"Access Key and Secret Required", @"AFAmazonS3Manager", nil)};
+            *error = [[NSError alloc] initWithDomain:AFAmazonS3ManagerErrorDomain code:NSURLErrorUserAuthenticationRequired userInfo:userInfo];
+        }
     }
 
-    return nil;
+    return mutableRequest;
 }
 
 #pragma mark - AFHTTPRequestSerializer
@@ -188,12 +194,7 @@ static NSString * AFBase64EncodedStringFromData(NSData *data) {
                                 parameters:(NSDictionary *)parameters
                                      error:(NSError *__autoreleasing *)error
 {
-    NSMutableURLRequest *request = [super requestWithMethod:method URLString:URLString parameters:parameters error:error];
-    [[self authorizationHeadersForRequest:request] enumerateKeysAndObjectsUsingBlock:^(NSString *field, NSString *value, __unused BOOL *stop) {
-        [request setValue:value forHTTPHeaderField:field];
-    }];
-
-    return request;
+    return [[self requestBySettingAuthorizationHeadersForRequest:[super requestWithMethod:method URLString:URLString parameters:parameters error:error] error:error] mutableCopy];
 }
 
 - (NSMutableURLRequest *)multipartFormRequestWithMethod:(NSString *)method
@@ -202,12 +203,7 @@ static NSString * AFBase64EncodedStringFromData(NSData *data) {
                               constructingBodyWithBlock:(void (^)(id<AFMultipartFormData>))block
                                                   error:(NSError *__autoreleasing *)error
 {
-    NSMutableURLRequest *request = [super multipartFormRequestWithMethod:method URLString:URLString parameters:parameters constructingBodyWithBlock:block error:error];
-    [[self authorizationHeadersForRequest:request] enumerateKeysAndObjectsUsingBlock:^(NSString *field, NSString *value, __unused BOOL *stop) {
-        [request setValue:value forHTTPHeaderField:field];
-    }];
-    
-    return request;
+    return [[self requestBySettingAuthorizationHeadersForRequest:[super multipartFormRequestWithMethod:method URLString:URLString parameters:parameters constructingBodyWithBlock:block error:error] error:error] mutableCopy];
 }
 
 @end

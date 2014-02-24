@@ -22,12 +22,26 @@
 
 #import "AFAmazonS3Manager.h"
 
+NSString * const AFAmazonS3ManagerErrorDomain = @"com.alamofire.networking.s3.error";
+
 @interface AFAmazonS3Manager ()
 @property (readwrite, nonatomic, strong) NSURL *baseURL;
 @end
 
 @implementation AFAmazonS3Manager
 @synthesize baseURL = _s3_baseURL;
+
+- (instancetype)initWithBaseURL:(NSURL *)url {
+    self = [super initWithBaseURL:url];
+    if (!self) {
+        return nil;
+    }
+
+    self.requestSerializer = [AFAmazonS3RequestSerializer serializer];
+    self.responseSerializer = [AFXMLParserResponseSerializer serializer];
+
+    return self;
+}
 
 - (id)initWithAccessKeyID:(NSString *)accessKey
                    secret:(NSString *)secret
@@ -37,7 +51,6 @@
         return nil;
     }
 
-    self.requestSerializer = [AFAmazonS3RequestSerializer serializer];
     [self.requestSerializer setAccessKeyID:accessKey secret:secret];
 
     return self;
@@ -45,7 +58,7 @@
 
 - (NSURL *)baseURL {
     if (!_s3_baseURL) {
-        return self.requestSerializer.baseURL;
+        return self.requestSerializer.endpointURL;
     }
 	
     return _s3_baseURL;
@@ -59,7 +72,7 @@
                                     success:(void (^)(id responseObject))success
                                     failure:(void (^)(NSError *error))failure
 {
-    NSMutableURLRequest *request = [self.requestSerializer requestWithMethod:method URLString:path parameters:parameters error:nil];
+    NSMutableURLRequest *request = [self.requestSerializer requestWithMethod:method URLString:[[self.baseURL URLByAppendingPathComponent:path] absoluteString] parameters:parameters error:nil];
     AFHTTPRequestOperation *requestOperation = [self HTTPRequestOperationWithRequest:request success:^(__unused AFHTTPRequestOperation *operation, id responseObject) {
         if (success) {
             success(responseObject);
@@ -110,10 +123,21 @@
 #pragma mark Object Operations
 
 - (void)headObjectWithPath:(NSString *)path
-                   success:(void (^)(id responseObject))success
+                   success:(void (^)(NSHTTPURLResponse *response))success
                    failure:(void (^)(NSError *error))failure
 {
-    [self enqueueS3RequestOperationWithMethod:@"HEAD" path:path parameters:nil success:success failure:failure];
+    NSMutableURLRequest *request = [self.requestSerializer requestWithMethod:@"HEAD" URLString:[[self.baseURL URLByAppendingPathComponent:path] absoluteString] parameters:nil error:nil];
+    AFHTTPRequestOperation *requestOperation = [self HTTPRequestOperationWithRequest:request success:^(AFHTTPRequestOperation *operation, __unused id responseObject) {
+        if (success) {
+            success(operation.response);
+        }
+    } failure:^(__unused AFHTTPRequestOperation *operation, NSError *error) {
+        if (failure) {
+            failure(error);
+        }
+    }];
+
+    [self.operationQueue addOperation:requestOperation];
 }
 
 - (void)getObjectWithPath:(NSString *)path
@@ -121,7 +145,7 @@
                   success:(void (^)(id responseObject, NSData *responseData))success
                   failure:(void (^)(NSError *error))failure
 {
-    NSMutableURLRequest *request = [self.requestSerializer requestWithMethod:@"GET" URLString:path parameters:nil error:nil];
+    NSMutableURLRequest *request = [self.requestSerializer requestWithMethod:@"GET" URLString:[[self.baseURL URLByAppendingPathComponent:path] absoluteString] parameters:nil error:nil];
     AFHTTPRequestOperation *requestOperation = [self HTTPRequestOperationWithRequest:request success:^(AFHTTPRequestOperation *operation, id responseObject) {
         if (success) {
             success(responseObject, operation.responseData);
@@ -143,7 +167,7 @@
                   success:(void (^)(id responseObject))success
                   failure:(void (^)(NSError *error))failure
 {
-    NSMutableURLRequest *request = [self.requestSerializer requestWithMethod:@"GET" URLString:path parameters:nil error:nil];
+    NSMutableURLRequest *request = [self.requestSerializer requestWithMethod:@"GET" URLString:[[self.baseURL URLByAppendingPathComponent:path] absoluteString] parameters:nil error:nil];
     AFHTTPRequestOperation *requestOperation = [self HTTPRequestOperationWithRequest:request success:^(__unused AFHTTPRequestOperation *operation, id responseObject) {
         if (success) {
             success(responseObject);
@@ -203,19 +227,19 @@
     NSData *data = [NSURLConnection sendSynchronousRequest:fileRequest returningResponse:&response error:&fileError];
 	
     if (data && response) {
-        NSMutableURLRequest *request = [self.requestSerializer multipartFormRequestWithMethod:method URLString:destinationPath parameters:parameters constructingBodyWithBlock:^(id <AFMultipartFormData> formData) {
+        NSMutableURLRequest *request = [self.requestSerializer multipartFormRequestWithMethod:method URLString:[[self.baseURL URLByAppendingPathComponent:destinationPath] absoluteString] parameters:parameters constructingBodyWithBlock:^(id <AFMultipartFormData> formData) {
             if (![parameters valueForKey:@"key"]) {
                 [formData appendPartWithFormData:[[filePath lastPathComponent] dataUsingEncoding:NSUTF8StringEncoding] name:@"key"];
             }
             [formData appendPartWithFileData:data name:@"file" fileName:[filePath lastPathComponent] mimeType:[response MIMEType]];
         } error:nil];
 
-        NSURL *temporaryFileURL = [NSURL fileURLWithPath:[NSTemporaryDirectory() stringByAppendingPathComponent:[[NSUUID UUID] UUIDString]]];
-        request = [self.requestSerializer requestWithMultipartFormRequest:request writingStreamContentsToFile:temporaryFileURL completionHandler:^(NSError *error) {
-            if (!error) {
-                [request setHTTPBody:[NSData dataWithContentsOfFile:[temporaryFileURL absoluteString]]];
-            }
-        }];
+//        NSURL *temporaryFileURL = [NSURL fileURLWithPath:[NSTemporaryDirectory() stringByAppendingPathComponent:[[NSUUID UUID] UUIDString]]];
+//        request = [self.requestSerializer requestWithMultipartFormRequest:request writingStreamContentsToFile:temporaryFileURL completionHandler:^(NSError *error) {
+//            if (!error) {
+//                [request setHTTPBody:[NSData dataWithContentsOfFile:[temporaryFileURL absoluteString]]];
+//            }
+//        }];
 
         AFHTTPRequestOperation *requestOperation = [self HTTPRequestOperationWithRequest:request success:^(__unused AFHTTPRequestOperation *operation, id responseObject) {
             if (success) {
@@ -240,5 +264,3 @@
 }
 
 @end
-
-#pragma mark -
