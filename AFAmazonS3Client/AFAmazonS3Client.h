@@ -21,12 +21,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#import "AFHTTPClient.h"
+#import "AFNetworking.h"
 
 /**
  AFAmazonS3Client` is an `AFHTTPClient` subclass for interacting with the Amazon S3 webservice API (http://aws.amazon.com/s3/).
  */
-@interface AFAmazonS3Client : AFHTTPClient
+@interface AFAmazonS3Client : AFHTTPRequestOperationManager
 
 /**
  The base URL for the HTTP client.

@@ -24,7 +24,6 @@
 #import <CommonCrypto/CommonHMAC.h>
 
 #import "AFAmazonS3Client.h"
-#import "AFXMLRequestOperation.h"
 
 static NSString * const AFAmazonS3ClientDefaultBaseURLString = @"http://s3.amazonaws.com";
 
@@ -137,9 +136,9 @@ static NSString * AFBase64EncodedStringFromData(NSData *data) {
     if (!self) {
         return nil;
     }
-	
-    [self registerHTTPOperationClass:[AFXMLRequestOperation class]];
-	
+
+    self.responseSerializer = [AFXMLParserResponseSerializer serializer];
+
     return self;
 }
 
@@ -215,7 +214,7 @@ static NSString * AFBase64EncodedStringFromData(NSData *data) {
         }
     }];
 	
-    [self enqueueHTTPRequestOperation:requestOperation];
+    [self.operationQueue addOperation:requestOperation];
 }
 
 
@@ -279,7 +278,7 @@ static NSString * AFBase64EncodedStringFromData(NSData *data) {
 	
     [requestOperation setDownloadProgressBlock:progress];
 	
-    [self enqueueHTTPRequestOperation:requestOperation];
+    [self.operationQueue addOperation:requestOperation];
 }
 
 - (void)getObjectWithPath:(NSString *)path
@@ -302,7 +301,7 @@ static NSString * AFBase64EncodedStringFromData(NSData *data) {
     [requestOperation setDownloadProgressBlock:progress];
     [requestOperation setOutputStream:outputStream];
 	
-    [self enqueueHTTPRequestOperation:requestOperation];
+    [self.operationQueue addOperation:requestOperation];
 }
 
 - (void)postObjectWithFile:(NSString *)path
@@ -368,33 +367,41 @@ static NSString * AFBase64EncodedStringFromData(NSData *data) {
 		
         [requestOperation setUploadProgressBlock:progress];
 		
-        [self enqueueHTTPRequestOperation:requestOperation];
+        [self.operationQueue addOperation:requestOperation];
     }
 }
 
-#pragma mark - AFHTTPClient
+#pragma mark - AFHTTPClient translation layer
 
 - (NSMutableURLRequest *)requestWithMethod:(NSString *)method
                                       path:(NSString *)path
                                 parameters:(NSDictionary *)parameters
 {
-    NSMutableURLRequest *request = [super requestWithMethod:method path:path parameters];
-    [[self authorizationHeadersForRequest:request] enumerateKeysAndObjectsUsingBlock:^(NSString *field, NSString *value, __unused BOOL *stop) {
-        [request setValue:value forHTTPHeaderField:field];
-    }];
-
-    return request;
+    NSString *URLString = [[NSURL URLWithString:path relativeToURL:self.baseURL] absoluteString];
+    return [self.requestSerializer requestWithMethod:method URLString:URLString parameters:parameters];
 }
 
 - (NSMutableURLRequest *)multipartFormRequestWithMethod:(NSString *)method
                                                    path:(NSString *)path
                                              parameters:(NSDictionary *)parameters
-                              constructingBodyWithBlock:(void (^)(id<AFMultipartFormData>))block
+                              constructingBodyWithBlock:(void (^) (id<AFMultipartFormData> formData))block
 {
-    NSMutableURLRequest *request = [super multipartFormRequestWithMethod:method path:path parameters:parameters constructingBodyWithBlock:block];
-    [[self authorizationHeadersForRequest:request] enumerateKeysAndObjectsUsingBlock:^(NSString *field, NSString *value, __unused BOOL *stop) {
-        [request setValue:value forHTTPHeaderField:field];
+    NSString *URLString = [[NSURL URLWithString:path relativeToURL:self.baseURL] absoluteString];
+    return [self.requestSerializer multipartFormRequestWithMethod:method URLString:URLString parameters:parameters constructingBodyWithBlock:block];
+}
+
+#pragma mark - AFHTTPRequestOperationManager
+
+- (AFHTTPRequestOperation *)HTTPRequestOperationWithRequest:(NSURLRequest *)request
+                                                    success:(void (^)(AFHTTPRequestOperation *, id))success
+                                                    failure:(void (^)(AFHTTPRequestOperation *, NSError *))failure
+{
+    NSMutableURLRequest *newRequest = [request copy];
+    [[self authorizationHeadersForRequest:newRequest] enumerateKeysAndObjectsUsingBlock:^(NSString *field, NSString *value, __unused BOOL *stop) {
+        [newRequest setValue:value forHTTPHeaderField:field];
     }];
+
+    return [super HTTPRequestOperationWithRequest:newRequest success:success failure:failure];
 }
 
 #pragma mark - NSKeyValueObserving
