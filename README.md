@@ -1,8 +1,6 @@
 # AFAmazonS3Client
 
-`AFAmazonS3Client` is an `AFHTTPClient` subclass for interacting with the [Amazon S3 API](http://aws.amazon.com/s3/).
-
-As the S3 API returns XML responses, you may find it useful to include [AFKissXMLRequestOperation](https://github.com/AFNetworking/AFKissXMLRequestOperation) (just remember to do `-registerHTTPOperationClass:`)
+`AFAmazonS3Client` is an `AFHTTPRequestOperationManager` subclass for interacting with the [Amazon S3 API](http://aws.amazon.com/s3/).
 
 ## Example Usage
 
