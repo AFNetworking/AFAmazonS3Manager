@@ -378,7 +378,7 @@ static NSString * AFBase64EncodedStringFromData(NSData *data) {
                                 parameters:(NSDictionary *)parameters
 {
     NSString *URLString = [[NSURL URLWithString:path relativeToURL:self.baseURL] absoluteString];
-    return [self.requestSerializer requestWithMethod:method URLString:URLString parameters:parameters];
+    return [self.requestSerializer requestWithMethod:method URLString:URLString parameters:parameters error:nil];
 }
 
 - (NSMutableURLRequest *)multipartFormRequestWithMethod:(NSString *)method
@@ -387,7 +387,7 @@ static NSString * AFBase64EncodedStringFromData(NSData *data) {
                               constructingBodyWithBlock:(void (^) (id<AFMultipartFormData> formData))block
 {
     NSString *URLString = [[NSURL URLWithString:path relativeToURL:self.baseURL] absoluteString];
-    return [self.requestSerializer multipartFormRequestWithMethod:method URLString:URLString parameters:parameters constructingBodyWithBlock:block];
+    return [self.requestSerializer multipartFormRequestWithMethod:method URLString:URLString parameters:parameters constructingBodyWithBlock:block error:nil];
 }
 
 #pragma mark - AFHTTPRequestOperationManager
