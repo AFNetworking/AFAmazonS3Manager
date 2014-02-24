@@ -378,7 +378,7 @@ static NSString * AFBase64EncodedStringFromData(NSData *data) {
                                       path:(NSString *)path
                                 parameters:(NSDictionary *)parameters
 {
-    NSMutableURLRequest *request = [super requestWithMethod:method path:path parameters];
+    NSMutableURLRequest *request = [super requestWithMethod:method path:path parameters:parameters];
     [[self authorizationHeadersForRequest:request] enumerateKeysAndObjectsUsingBlock:^(NSString *field, NSString *value, __unused BOOL *stop) {
         [request setValue:value forHTTPHeaderField:field];
     }];
