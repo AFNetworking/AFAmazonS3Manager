@@ -395,6 +395,7 @@ static NSString * AFBase64EncodedStringFromData(NSData *data) {
     [[self authorizationHeadersForRequest:request] enumerateKeysAndObjectsUsingBlock:^(NSString *field, NSString *value, __unused BOOL *stop) {
         [request setValue:value forHTTPHeaderField:field];
     }];
+    return request;
 }
 
 #pragma mark - NSKeyValueObserving
