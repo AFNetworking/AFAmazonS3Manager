@@ -260,7 +260,7 @@ NSString * const AFAmazonS3ManagerErrorDomain = @"com.alamofire.networking.s3.er
 #pragma mark - NSKeyValueObserving
 
 + (NSSet *)keyPathsForValuesAffectingBaseURL {
-    return [NSSet setWithObjects:@"baseURL", @"requestSerializer.bucket", @"requestSerializer.region", @"requestSerializer.useSSL", nil];
+    return [NSSet setWithObjects:@"baseURL", @"requestSerializer.bucket", @"requestSerializer.region", @"requestSerializer.sessionToken", @"requestSerializer.useSSL", nil];
 }
 
 @end

@@ -42,6 +42,11 @@
 @property (nonatomic, copy) NSString *region;
 
 /**
+ The AWS STS session token. `nil` by default.
+ */
+@property (nonatomic, copy) NSString *sessionToken;
+
+/**
  Whether to connect over HTTPS. `YES` by default.
 
  @see `AFAmazonS3Client -baseURL`
