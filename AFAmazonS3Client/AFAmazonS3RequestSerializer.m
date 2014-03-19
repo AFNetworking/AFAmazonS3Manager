@@ -141,36 +141,36 @@ static NSString * AFBase64EncodedStringFromData(NSData *data) {
     NSMutableURLRequest *mutableRequest = [request mutableCopy];
 
     if (self.accessKey && self.secret) {
-		NSMutableDictionary *mutableAMZHeaderFields = [NSMutableDictionary dictionary];
-		[[request allHTTPHeaderFields] enumerateKeysAndObjectsUsingBlock:^(NSString *key, id value, __unused BOOL *stop) {
-			key = [key lowercaseString];
-			if ([key hasPrefix:@"x-amz"]) {
-				if ([mutableAMZHeaderFields objectForKey:key]) {
-					value = [[mutableAMZHeaderFields objectForKey:key] stringByAppendingFormat:@",%@", value];
-				}
-				[mutableAMZHeaderFields setObject:value forKey:key];
-			}
-		}];
+        NSMutableDictionary *mutableAMZHeaderFields = [NSMutableDictionary dictionary];
+        [[request allHTTPHeaderFields] enumerateKeysAndObjectsUsingBlock:^(NSString *key, id value, __unused BOOL *stop) {
+            key = [key lowercaseString];
+            if ([key hasPrefix:@"x-amz"]) {
+                if ([mutableAMZHeaderFields objectForKey:key]) {
+                    value = [[mutableAMZHeaderFields objectForKey:key] stringByAppendingFormat:@",%@", value];
+                }
+                [mutableAMZHeaderFields setObject:value forKey:key];
+            }
+        }];
 
-		NSMutableString *mutableCanonicalizedAMZHeaderString = [NSMutableString string];
-		for (NSString *key in [[mutableAMZHeaderFields allKeys] sortedArrayUsingSelector:@selector(compare:)]) {
+        NSMutableString *mutableCanonicalizedAMZHeaderString = [NSMutableString string];
+        for (NSString *key in [[mutableAMZHeaderFields allKeys] sortedArrayUsingSelector:@selector(compare:)]) {
             id value = [mutableAMZHeaderFields objectForKey:key];
-			[mutableCanonicalizedAMZHeaderString appendFormat:@"%@:%@\n", key, value];
-		}
+            [mutableCanonicalizedAMZHeaderString appendFormat:@"%@:%@\n", key, value];
+        }
 
-    NSString *canonicalizedResource = [NSString stringWithFormat:@"/%@%@", self.bucket, request.URL.path];
-    NSString *method = [request HTTPMethod];
-		NSString *contentMD5 = [request valueForHTTPHeaderField:@"Content-MD5"];
-		NSString *contentType = [request valueForHTTPHeaderField:@"Content-Type"];
-		NSString *date = AFRFC822FormatStringFromDate([NSDate date]);
+        NSString *canonicalizedResource = [NSString stringWithFormat:@"/%@%@", self.bucket, request.URL.path];
+        NSString *method = [request HTTPMethod];
+        NSString *contentMD5 = [request valueForHTTPHeaderField:@"Content-MD5"];
+        NSString *contentType = [request valueForHTTPHeaderField:@"Content-Type"];
+        NSString *date = AFRFC822FormatStringFromDate([NSDate date]);
 
-		NSMutableString *mutableString = [NSMutableString string];
-		[mutableString appendFormat:@"%@\n", (method) ? method : @""];
-		[mutableString appendFormat:@"%@\n", (contentMD5) ? contentMD5 : @""];
-		[mutableString appendFormat:@"%@\n", (contentType) ? contentType : @""];
-		[mutableString appendFormat:@"%@\n", (date) ? date : @""];
-		[mutableString appendFormat:@"%@", mutableCanonicalizedAMZHeaderString];
-		[mutableString appendFormat:@"%@", canonicalizedResource];
+        NSMutableString *mutableString = [NSMutableString string];
+        [mutableString appendFormat:@"%@\n", (method) ? method : @""];
+        [mutableString appendFormat:@"%@\n", (contentMD5) ? contentMD5 : @""];
+        [mutableString appendFormat:@"%@\n", (contentType) ? contentType : @""];
+        [mutableString appendFormat:@"%@\n", (date) ? date : @""];
+        [mutableString appendFormat:@"%@", mutableCanonicalizedAMZHeaderString];
+        [mutableString appendFormat:@"%@", canonicalizedResource];
 
         NSData *hmac = AFHMACSHA1EncodedDataFromStringWithKey(mutableString, self.secret);
         NSString *signature = AFBase64EncodedStringFromData(hmac);
