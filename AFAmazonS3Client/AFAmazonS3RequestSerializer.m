@@ -158,8 +158,8 @@ static NSString * AFBase64EncodedStringFromData(NSData *data) {
 			[mutableCanonicalizedAMZHeaderString appendFormat:@"%@:%@\n", key, value];
 		}
 
-        NSString *canonicalizedResource = [NSString stringWithFormat:@"/%@%@", self.bucket, request.URL.path];
-    	NSString *method = [request HTTPMethod];
+    NSString *canonicalizedResource = [NSString stringWithFormat:@"/%@%@", self.bucket, request.URL.path];
+    NSString *method = [request HTTPMethod];
 		NSString *contentMD5 = [request valueForHTTPHeaderField:@"Content-MD5"];
 		NSString *contentType = [request valueForHTTPHeaderField:@"Content-Type"];
 		NSString *date = AFRFC822FormatStringFromDate([NSDate date]);
