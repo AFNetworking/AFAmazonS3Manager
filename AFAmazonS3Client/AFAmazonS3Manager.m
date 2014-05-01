@@ -141,7 +141,7 @@ NSString * const AFAmazonS3ManagerErrorDomain = @"com.alamofire.networking.s3.er
 }
 
 - (void)getObjectWithPath:(NSString *)path
-                 progress:(void (^)(NSUInteger bytesRead, NSInteger totalBytesRead, NSInteger totalBytesExpectedToRead))progress
+                 progress:(void (^)(NSUInteger bytesRead, long long totalBytesRead, long long totalBytesExpectedToRead))progress
                   success:(void (^)(id responseObject, NSData *responseData))success
                   failure:(void (^)(NSError *error))failure
 {
@@ -163,7 +163,7 @@ NSString * const AFAmazonS3ManagerErrorDomain = @"com.alamofire.networking.s3.er
 
 - (void)getObjectWithPath:(NSString *)path
              outputStream:(NSOutputStream *)outputStream
-                 progress:(void (^)(NSUInteger bytesRead, NSInteger totalBytesRead, NSInteger totalBytesExpectedToRead))progress
+                 progress:(void (^)(NSUInteger bytesRead, long long totalBytesRead, long long totalBytesExpectedToRead))progress
                   success:(void (^)(id responseObject))success
                   failure:(void (^)(NSError *error))failure
 {
@@ -187,7 +187,7 @@ NSString * const AFAmazonS3ManagerErrorDomain = @"com.alamofire.networking.s3.er
 - (void)postObjectWithFile:(NSString *)path
            destinationPath:(NSString *)destinationPath
                 parameters:(NSDictionary *)parameters
-                  progress:(void (^)(NSUInteger bytesWritten, NSInteger totalBytesWritten, NSInteger totalBytesExpectedToWrite))progress
+                  progress:(void (^)(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite))progress
                    success:(void (^)(id responseObject))success
                    failure:(void (^)(NSError *error))failure
 {
@@ -197,7 +197,7 @@ NSString * const AFAmazonS3ManagerErrorDomain = @"com.alamofire.networking.s3.er
 - (void)putObjectWithFile:(NSString *)path
           destinationPath:(NSString *)destinationPath
                parameters:(NSDictionary *)parameters
-                 progress:(void (^)(NSUInteger bytesWritten, NSInteger totalBytesWritten, NSInteger totalBytesExpectedToWrite))progress
+                 progress:(void (^)(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite))progress
                   success:(void (^)(id responseObject))success
                   failure:(void (^)(NSError *error))failure
 {
@@ -215,7 +215,7 @@ NSString * const AFAmazonS3ManagerErrorDomain = @"com.alamofire.networking.s3.er
                        file:(NSString *)filePath
             destinationPath:(NSString *)destinationPath
                  parameters:(NSDictionary *)parameters
-                   progress:(void (^)(NSUInteger bytesWritten, NSInteger totalBytesWritten, NSInteger totalBytesExpectedToWrite))progress
+                   progress:(void (^)(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite))progress
                     success:(void (^)(id responseObject))success
                     failure:(void (^)(NSError *error))failure
 {
