@@ -46,7 +46,7 @@ NSString * const AFAmazonS3ManagerErrorDomain = @"com.alamofire.networking.s3.er
 - (id)initWithAccessKeyID:(NSString *)accessKey
                    secret:(NSString *)secret
 {
-    self = [self init];
+    self = [self initWithBaseURL:nil];
     if (!self) {
         return nil;
     }
