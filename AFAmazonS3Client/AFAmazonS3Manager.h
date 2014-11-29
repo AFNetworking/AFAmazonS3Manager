@@ -24,7 +24,7 @@
 #import "AFAmazonS3RequestSerializer.h"
 
 /**
- AFAmazonS3Client` is an `AFHTTPClient` subclass for interacting with the Amazon S3 webservice API (http://aws.amazon.com/s3/).
+ AFAmazonS3Client` is an `AFHTTPRequestOperationManager` subclass for interacting with the Amazon S3 webservice API (http://aws.amazon.com/s3/).
  */
 @interface AFAmazonS3Manager : AFHTTPRequestOperationManager
 
