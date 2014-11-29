@@ -26,7 +26,7 @@
 /**
  AFAmazonS3Client` is an `AFHTTPRequestOperationManager` subclass for interacting with the Amazon S3 webservice API (http://aws.amazon.com/s3/).
  */
-@interface AFAmazonS3Manager : AFHTTPRequestOperationManager
+@interface AFAmazonS3Manager : AFHTTPRequestOperationManager <NSSecureCoding, NSCopying>
 
 /**
  The base URL for the S3 manager.

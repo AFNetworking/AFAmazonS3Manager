@@ -275,4 +275,20 @@ NSString * const AFAmazonS3ManagerErrorDomain = @"com.alamofire.networking.s3.er
     return [NSSet setWithObjects:@"baseURL", @"requestSerializer.bucket", @"requestSerializer.region", @"requestSerializer.useSSL", nil];
 }
 
+#pragma mark - NSCopying
+
+- (id)copyWithZone:(NSZone *)zone {
+    AFAmazonS3Manager *manager;
+    if (_s3_baseURL) {
+        manager = [[[self class] allocWithZone:zone] initWithBaseURL:self.baseURL];
+    } else {
+        manager = [[[self class] allocWithZone:zone] init];
+    }
+
+    manager.requestSerializer = [self.requestSerializer copyWithZone:zone];
+    manager.responseSerializer = [self.responseSerializer copyWithZone:zone];
+
+    return manager;
+}
+
 @end
