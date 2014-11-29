@@ -243,13 +243,6 @@ NSString * const AFAmazonS3ManagerErrorDomain = @"com.alamofire.networking.s3.er
             return;
         }
 
-//        NSURL *temporaryFileURL = [NSURL fileURLWithPath:[NSTemporaryDirectory() stringByAppendingPathComponent:[[NSUUID UUID] UUIDString]]];
-//        request = [self.requestSerializer requestWithMultipartFormRequest:request writingStreamContentsToFile:temporaryFileURL completionHandler:^(NSError *error) {
-//            if (!error) {
-//                [request setHTTPBody:[NSData dataWithContentsOfFile:[temporaryFileURL absoluteString]]];
-//            }
-//        }];
-
         AFHTTPRequestOperation *requestOperation = [self HTTPRequestOperationWithRequest:request success:^(__unused AFHTTPRequestOperation *operation, id responseObject) {
             if (success) {
                 success(responseObject);
