@@ -34,6 +34,8 @@ NSString * const AFAmazonS3APSoutheast2Region = @"s3-ap-southeast-2.amazonaws.co
 NSString * const AFAmazonS3APNortheast2Region = @"s3-ap-northeast-1.amazonaws.com";
 NSString * const AFAmazonS3SAEast1Region = @"s3-sa-east-1.amazonaws.com";
 
+static NSTimeInterval const AFAmazonS3DefaultExpirationTimeInterval = 60 * 60;
+
 static NSData * AFHMACSHA1EncodedDataFromStringWithKey(NSString *string, NSString *key) {
     NSData *data = [string dataUsingEncoding:NSASCIIStringEncoding];
     CCHmacContext context;
@@ -85,6 +87,40 @@ static NSString * AFBase64EncodedStringFromData(NSData *data) {
     }
 
     return [[NSString alloc] initWithData:mutableData encoding:NSASCIIStringEncoding];
+}
+
+static NSString * AFAWSSignatureForRequest(NSURLRequest *request, NSString *bucket, NSString *timestamp, NSString *key) {
+    NSMutableDictionary *mutableAMZHeaderFields = [NSMutableDictionary dictionary];
+    [[request allHTTPHeaderFields] enumerateKeysAndObjectsUsingBlock:^(NSString *field, id value, __unused BOOL *stop) {
+        field = [field lowercaseString];
+        if ([field hasPrefix:@"x-amz"]) {
+            if ([mutableAMZHeaderFields objectForKey:field]) {
+                value = [[mutableAMZHeaderFields objectForKey:field] stringByAppendingFormat:@",%@", value];
+            }
+            [mutableAMZHeaderFields setObject:value forKey:field];
+        }
+    }];
+
+    NSMutableString *mutableCanonicalizedAMZHeaderString = [NSMutableString string];
+    for (NSString *field in [[mutableAMZHeaderFields allKeys] sortedArrayUsingSelector:@selector(compare:)]) {
+        id value = [mutableAMZHeaderFields objectForKey:field];
+        [mutableCanonicalizedAMZHeaderString appendFormat:@"%@:%@\n", field, value];
+    }
+
+    NSString *canonicalizedResource = [NSString stringWithFormat:@"/%@%@", bucket, request.URL.path];
+    NSString *method = [request HTTPMethod];
+    NSString *contentMD5 = [request valueForHTTPHeaderField:@"Content-MD5"];
+    NSString *contentType = [request valueForHTTPHeaderField:@"Content-Type"];
+
+    NSMutableString *mutableString = [NSMutableString string];
+    [mutableString appendFormat:@"%@\n", method ? method : @""];
+    [mutableString appendFormat:@"%@\n", contentMD5 ? contentMD5 : @""];
+    [mutableString appendFormat:@"%@\n", contentType ? contentType : @""];
+    [mutableString appendFormat:@"%@\n", timestamp ? timestamp : @""];
+    [mutableString appendFormat:@"%@", mutableCanonicalizedAMZHeaderString];
+    [mutableString appendFormat:@"%@", canonicalizedResource];
+
+    return AFBase64EncodedStringFromData(AFHMACSHA1EncodedDataFromStringWithKey(mutableString, key));
 }
 
 @interface AFAmazonS3RequestSerializer ()
@@ -141,50 +177,57 @@ static NSString * AFBase64EncodedStringFromData(NSData *data) {
     NSMutableURLRequest *mutableRequest = [request mutableCopy];
 
     if (self.accessKey && self.secret) {
-		NSMutableDictionary *mutableAMZHeaderFields = [NSMutableDictionary dictionary];
-		[[request allHTTPHeaderFields] enumerateKeysAndObjectsUsingBlock:^(NSString *key, id value, __unused BOOL *stop) {
-			key = [key lowercaseString];
-			if ([key hasPrefix:@"x-amz"]) {
-				if ([mutableAMZHeaderFields objectForKey:key]) {
-					value = [[mutableAMZHeaderFields objectForKey:key] stringByAppendingFormat:@",%@", value];
-				}
-				[mutableAMZHeaderFields setObject:value forKey:key];
-			}
-		}];
-
-		NSMutableString *mutableCanonicalizedAMZHeaderString = [NSMutableString string];
-		for (NSString *key in [[mutableAMZHeaderFields allKeys] sortedArrayUsingSelector:@selector(compare:)]) {
-            id value = [mutableAMZHeaderFields objectForKey:key];
-			[mutableCanonicalizedAMZHeaderString appendFormat:@"%@:%@\n", key, value];
-		}
-
-        NSString *canonicalizedResource = [NSString stringWithFormat:@"/%@%@", self.bucket, request.URL.path];
-    	NSString *method = [request HTTPMethod];
-		NSString *contentMD5 = [request valueForHTTPHeaderField:@"Content-MD5"];
-		NSString *contentType = [request valueForHTTPHeaderField:@"Content-Type"];
-		NSString *date = AFRFC822FormatStringFromDate([NSDate date]);
-
-		NSMutableString *mutableString = [NSMutableString string];
-		[mutableString appendFormat:@"%@\n", (method) ? method : @""];
-		[mutableString appendFormat:@"%@\n", (contentMD5) ? contentMD5 : @""];
-		[mutableString appendFormat:@"%@\n", (contentType) ? contentType : @""];
-		[mutableString appendFormat:@"%@\n", (date) ? date : @""];
-		[mutableString appendFormat:@"%@", mutableCanonicalizedAMZHeaderString];
-		[mutableString appendFormat:@"%@", canonicalizedResource];
-
-        NSData *hmac = AFHMACSHA1EncodedDataFromStringWithKey(mutableString, self.secret);
-        NSString *signature = AFBase64EncodedStringFromData(hmac);
+        NSDate *date = [NSDate date];
+        NSString *signature = AFAWSSignatureForRequest(request, self.bucket, AFRFC822FormatStringFromDate(date), self.secret);
 
         [mutableRequest setValue:[NSString stringWithFormat:@"AWS %@:%@", self.accessKey, signature] forHTTPHeaderField:@"Authorization"];
-        [mutableRequest setValue:(date) ? date : @"" forHTTPHeaderField:@"Date"];
+        [mutableRequest setValue:date ? AFRFC822FormatStringFromDate(date) : @"" forHTTPHeaderField:@"Date"];
     } else {
         if (error) {
-            NSDictionary *userInfo = @{NSLocalizedDescriptionKey: NSLocalizedStringFromTable(@"Access Key and Secret Required", @"AFAmazonS3Manager", nil)};
+            NSDictionary *userInfo = @{
+                                       NSLocalizedDescriptionKey: NSLocalizedStringFromTable(@"Access Key and Secret Required", @"AFAmazonS3Manager", nil)
+                                       };
+
             *error = [[NSError alloc] initWithDomain:AFAmazonS3ManagerErrorDomain code:NSURLErrorUserAuthenticationRequired userInfo:userInfo];
         }
     }
 
     return mutableRequest;
+}
+
+- (NSURLRequest *)preSignedRequestWithRequest:(NSURLRequest *)request
+                                   expiration:(NSDate *)expiration
+                                        error:(NSError * __autoreleasing *)error
+{
+    NSParameterAssert(request);
+    NSParameterAssert([request.HTTPMethod compare:@"GET" options:NSCaseInsensitiveSearch] == NSOrderedSame);
+
+    if (!expiration) {
+        expiration = [[NSDate date] dateByAddingTimeInterval:AFAmazonS3DefaultExpirationTimeInterval];
+    }
+
+    if (self.accessKey) {
+        NSString *expires = @([expiration timeIntervalSince1970]).stringValue;
+        NSString *signature = AFAWSSignatureForRequest(request, self.bucket, expires, self.accessKey);
+
+        NSDictionary *parameters = @{
+                                     @"AWSAccessKeyId": self.accessKey,
+                                     @"Expires": expires,
+                                     @"Signature": signature
+                                    };
+
+        return [self requestBySerializingRequest:request withParameters:parameters error:error];
+    } else {
+        if (error) {
+            NSDictionary *userInfo = @{
+                                       NSLocalizedDescriptionKey: NSLocalizedStringFromTable(@"Access Key required", @"AFAmazonS3Manager", nil)
+                                       };
+
+            *error = [[NSError alloc] initWithDomain:AFAmazonS3ManagerErrorDomain code:NSURLErrorUserAuthenticationRequired userInfo:userInfo];
+        }
+
+        return nil;
+    }
 }
 
 #pragma mark - AFHTTPRequestSerializer
