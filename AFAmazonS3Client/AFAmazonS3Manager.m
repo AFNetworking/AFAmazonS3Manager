@@ -178,8 +178,9 @@ NSString * const AFAmazonS3ManagerErrorDomain = @"com.alamofire.networking.s3.er
         }
     }];
 
+    requestOperation.outputStream = outputStream;
+
     [requestOperation setDownloadProgressBlock:progress];
-    [requestOperation setOutputStream:outputStream];
 
     [self.operationQueue addOperation:requestOperation];
 }
@@ -245,7 +246,7 @@ NSString * const AFAmazonS3ManagerErrorDomain = @"com.alamofire.networking.s3.er
         [formData appendPartWithFileData:data name:@"file" fileName:[filePath lastPathComponent] mimeType:[response MIMEType]];
     } error:&requestError];
 
-    if (!request || requestError) {
+    if (requestError || !request) {
         if (failure) {
             failure(requestError);
         }
