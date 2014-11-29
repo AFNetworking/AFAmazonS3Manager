@@ -8,17 +8,20 @@ As the S3 API returns XML responses, you may find it useful to set [AFOnoRespons
 
 ```objective-c
 AFAmazonS3Manager *s3Manager = [[AFAmazonS3Manager alloc] initWithAccessKeyID:@"..." secret:@"..."];
-s3Manager.region = AFAmazonS3USWest1Region;
-s3Manager.bucket = @"my-bucket-name";
+s3manager.requestSerializer.region = AFAmazonS3USWest1Region;
+s3manager.requestSerializer.bucket = @"my-bucket-name";
 
-[s3Manager postObjectWithFile:@"/path/to/file"
-              destinationPath:@"https://s3.amazonaws.com/example"
+NSString *destinationPath = @"/pathOnS3/to/file.txt";
+
+[s3Manager postObjectWithFile:@"/path/to/file.txt"
+              destinationPath:destinationPath
                    parameters:nil
                      progress:^(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite) {
                         NSLog(@"%f%% Uploaded", (totalBytesWritten / (totalBytesExpectedToWrite * 1.0f) * 100));
 }
                       success:^(id responseObject) {
-                        NSLog(@"Upload Complete");
+                        NSURL *resultURL = [s3manager.requestSerializer.endpointURL URLByAppendingPathComponent:destinationPath];
+                        NSLog(@"Upload Complete: %@", resultURL);
 }
                       failure:^(NSError *error) {
                          NSLog(@"Error: %@", error);
