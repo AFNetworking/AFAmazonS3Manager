@@ -220,7 +220,7 @@ NSString * const AFAmazonS3ManagerErrorDomain = @"com.alamofire.networking.s3.er
                     failure:(void (^)(NSError *error))failure
 {
     NSMutableURLRequest *fileRequest = [NSMutableURLRequest requestWithURL:[NSURL fileURLWithPath:filePath]];
-    [fileRequest setCachePolicy:NSURLRequestReloadIgnoringLocalCacheData];
+    fileRequest.cachePolicy = NSURLRequestReloadIgnoringLocalCacheData;
 
     NSURLResponse *response = nil;
     NSError *fileError = nil;
