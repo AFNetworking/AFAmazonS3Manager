@@ -65,6 +65,17 @@
                 secret:(NSString *)secret;
 
 /**
+ Returns a URL for an object at the given path.
+
+ @param path The path to the object in the bucket.
+
+ @return An `NSURL` of a pre-signed query request URL to access the object through the REST API via URL.
+*/
+- (NSURL *)preSignedQueryURLWithPath:(NSString *)path;
+
+
+
+/**
  Returns the AWS authorization HTTP header fields for the specified request.
 
  @param request The request.

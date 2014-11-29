@@ -133,6 +133,37 @@ static NSString * AFBase64EncodedStringFromData(NSData *data) {
     return [NSURL URLWithString:URLString];
 }
 
+#pragma mark - Pre-signed Query URL
+
+- (NSURL *)preSignedQueryURLWithPath:(NSString *)path
+{
+  NSTimeInterval expiryTimeInterval = [[NSDate date] timeIntervalSince1970] + (60 * 60);
+  NSInteger expiryTime = expiryTimeInterval;
+  
+  NSString *canonicalizedResource = [NSString stringWithFormat:@"/%@/%@", self.bucket, path];
+  
+  NSMutableString *authorizationString =[NSMutableString string];
+  [authorizationString appendString:@"GET\n"];
+  [authorizationString appendString:@"\n"];
+  [authorizationString appendString:@"\n"];
+  [authorizationString appendFormat:@"%ld\n", (long)expiryTime];
+  [authorizationString appendFormat:@"%@", canonicalizedResource];
+  
+  NSData *hmac = AFHMACSHA1EncodedDataFromStringWithKey(authorizationString, self.secret);
+  NSString *signature = AFBase64EncodedStringFromData(hmac);
+  signature = [signature stringByReplacingOccurrencesOfString:@"+" withString:@"%2B"];
+  
+  
+  NSString *URLStringWithParameters = [NSString stringWithFormat:@"%@/%@?Expires=%ld&AWSAccessKeyId=%@&Signature=%@",
+                                       self.endpointURL,
+                                       path,
+                                       (long)expiryTime,
+                                       self.accessKey,
+                                       signature];
+  
+  return [NSURL URLWithString:URLStringWithParameters];
+}
+
 #pragma mark -
 
 - (NSURLRequest *)requestBySettingAuthorizationHeadersForRequest:(NSURLRequest *)request
