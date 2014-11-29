@@ -223,3 +223,5 @@
  AFAmazonS3Manager errors. Error codes for `AFAmazonS3ManagerErrorDomain` correspond to codes in `NSURLErrorDomain`.
  */
 extern NSString * const AFAmazonS3ManagerErrorDomain;
+
+@compatibility_alias AFAmazonS3Client AFAmazonS3Manager;
