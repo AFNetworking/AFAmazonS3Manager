@@ -237,7 +237,13 @@ static NSString * AFAWSSignatureForRequest(NSURLRequest *request, NSString *buck
                                 parameters:(NSDictionary *)parameters
                                      error:(NSError *__autoreleasing *)error
 {
-    return [[self requestBySettingAuthorizationHeadersForRequest:[super requestWithMethod:method URLString:URLString parameters:parameters error:error] error:error] mutableCopy];
+    NSMutableURLRequest *request = [super requestWithMethod:method URLString:URLString parameters:parameters error:error];
+
+    if (self.sessionToken) {
+        [request setValue:self.sessionToken forHTTPHeaderField:@"x-amz-security-token"];
+    }
+
+    return [[self requestBySettingAuthorizationHeadersForRequest:request error:error] mutableCopy];
 }
 
 - (NSMutableURLRequest *)multipartFormRequestWithMethod:(NSString *)method
@@ -246,7 +252,13 @@ static NSString * AFAWSSignatureForRequest(NSURLRequest *request, NSString *buck
                               constructingBodyWithBlock:(void (^)(id<AFMultipartFormData>))block
                                                   error:(NSError *__autoreleasing *)error
 {
-    return [[self requestBySettingAuthorizationHeadersForRequest:[super multipartFormRequestWithMethod:method URLString:URLString parameters:parameters constructingBodyWithBlock:block error:error] error:error] mutableCopy];
+    NSMutableURLRequest *request = [super multipartFormRequestWithMethod:method URLString:URLString parameters:parameters constructingBodyWithBlock:block error:error];
+
+    if (self.sessionToken) {
+        [request setValue:self.sessionToken forHTTPHeaderField:@"x-amz-security-token"];
+    }
+
+    return [[self requestBySettingAuthorizationHeadersForRequest:request error:error] mutableCopy];
 }
 
 @end
