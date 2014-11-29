@@ -2,8 +2,8 @@
 <Workspace
    version = "1.0">
    <Group
-      location = "group:AFAmazonS3Client"
-      name = "AFAmazonS3Client">
+      location = "group:AFAmazonS3Manager"
+      name = "AFAmazonS3Manager">
       <FileRef
          location = "group:AFAmazonS3Manager.h">
       </FileRef>

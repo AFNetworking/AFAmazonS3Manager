@@ -1,6 +1,6 @@
-# AFAmazonS3Client
+# AFAmazonS3Manager
 
-`AFAmazonS3Client` is an `AFHTTPRequestOperationManager` subclass for interacting with the [Amazon S3 API](http://aws.amazon.com/s3/).
+`AFAmazonS3Manager` is an `AFHTTPRequestOperationManager` subclass for interacting with the [Amazon S3 API](http://aws.amazon.com/s3/).
 
 As the S3 API returns XML responses, you may find it useful to set [AFOnoResponseSerializer](https://github.com/AFNetworking/AFOnoResponseSerializer) as the response serializer.
 
@@ -38,4 +38,4 @@ Mattt Thompson
 
 ## License
 
-AFAmazonS3Client is available under the MIT license. See the LICENSE file for more info.
+AFAmazonS3Manager is available under the MIT license. See the LICENSE file for more info.

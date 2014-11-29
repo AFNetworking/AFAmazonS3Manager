@@ -1,6 +1,6 @@
 // AFAmazonS3RequestSerializer.h
 //
-// Copyright (c) 2014 Mattt Thompson (http://mattt.me/)
+// Copyright (c) 2011–2014 AFNetworking (http://afnetworking.com/)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,14 +30,14 @@
 /**
  The S3 bucket for the client. `nil` by default.
 
- @see `AFAmazonS3Client -baseURL`
+ @see `AFAmazonS3Manager -baseURL`
  */
 @property (nonatomic, copy) NSString *bucket;
 
 /**
  The AWS region for the client. `AFAmazonS3USStandardRegion` by default. Must not be `nil`. See "AWS Regions" for defined constant values.
 
- @see `AFAmazonS3Client -baseURL`
+ @see `AFAmazonS3Manager -baseURL`
  */
 @property (nonatomic, copy) NSString *region;
 
@@ -49,7 +49,7 @@
 /**
  Whether to connect over HTTPS. `YES` by default.
 
- @see `AFAmazonS3Client -baseURL`
+ @see `AFAmazonS3Manager -baseURL`
  */
 @property (nonatomic, assign) BOOL useSSL;
 
@@ -60,7 +60,7 @@
 
 /**
  Sets the access key ID and secret, used to generate authorization headers.
- 
+
  @param accessKey The Amazon S3 Access Key ID.
  @param secret The Amazon S3 Secret.
 
@@ -82,11 +82,11 @@
 
 /**
  Returns a request with pre-signed credentials in the query string.
- 
+
  @param request The request. `HTTPMethod` must be `GET`.
  @param expiration The request expiration. If `nil`, defaults to 1 hour from when method is called.
  @param error The error that occured while constructing the request.
- 
+
  @return The request with credentials signed in query string.
  */
 - (NSURLRequest *)preSignedRequestWithRequest:(NSURLRequest *)request
