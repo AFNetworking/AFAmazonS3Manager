@@ -36,7 +36,7 @@
 @property (readonly, nonatomic, strong) NSURL *baseURL;
 
 /**
- 
+ Requests created by `AFAmazonS3Manager` are serialized by a subclass of `AFAmazonS3RequestSerializer`, which is responsible for encoding credentials, and any specified region and bucket.
  */
 @property (nonatomic, strong) AFAmazonS3RequestSerializer <AFURLRequestSerialization> * requestSerializer;
 
