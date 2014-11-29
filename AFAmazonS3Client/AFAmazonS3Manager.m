@@ -237,21 +237,27 @@ NSString * const AFAmazonS3ManagerErrorDomain = @"com.alamofire.networking.s3.er
 
     destinationPath = [destinationPath stringByReplacingOccurrencesOfString:@" " withString:@"+"];
 
-    NSError *requestError = nil;
-    NSMutableURLRequest *request = [self.requestSerializer multipartFormRequestWithMethod:method URLString:[[self.baseURL URLByAppendingPathComponent:destinationPath] absoluteString] parameters:parameters constructingBodyWithBlock:^(id <AFMultipartFormData> formData) {
-        if (![parameters valueForKey:@"key"]) {
-            [formData appendPartWithFormData:[[filePath lastPathComponent] dataUsingEncoding:NSUTF8StringEncoding] name:@"key"];
+    NSMutableURLRequest *request = nil;
+    if ([method compare:@"POST" options:NSCaseInsensitiveSearch] == NSOrderedSame) {
+        NSError *requestError = nil;
+        request = [self.requestSerializer multipartFormRequestWithMethod:method URLString:[[self.baseURL URLByAppendingPathComponent:destinationPath] absoluteString] parameters:parameters constructingBodyWithBlock:^(id <AFMultipartFormData> formData) {
+            if (![parameters valueForKey:@"key"]) {
+                [formData appendPartWithFormData:[[filePath lastPathComponent] dataUsingEncoding:NSUTF8StringEncoding] name:@"key"];
+            }
+
+            [formData appendPartWithFileData:data name:@"file" fileName:[filePath lastPathComponent] mimeType:[response MIMEType]];
+        } error:&requestError];
+
+        if (requestError || !request) {
+            if (failure) {
+                failure(requestError);
+            }
+            
+            return;
         }
-
-        [formData appendPartWithFileData:data name:@"file" fileName:[filePath lastPathComponent] mimeType:[response MIMEType]];
-    } error:&requestError];
-
-    if (requestError || !request) {
-        if (failure) {
-            failure(requestError);
-        }
-
-        return;
+    } else {
+        request = [self.requestSerializer requestWithMethod:method URLString:[[self.baseURL URLByAppendingPathComponent:destinationPath] absoluteString] parameters:parameters error:nil];
+        request.HTTPBody = data;
     }
 
     AFHTTPRequestOperation *requestOperation = [self HTTPRequestOperationWithRequest:request success:^(__unused AFHTTPRequestOperation *operation, id responseObject) {
