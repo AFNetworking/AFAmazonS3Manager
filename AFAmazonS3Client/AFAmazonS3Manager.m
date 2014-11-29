@@ -226,39 +226,46 @@ NSString * const AFAmazonS3ManagerErrorDomain = @"com.alamofire.networking.s3.er
     NSError *fileError = nil;
     NSData *data = [NSURLConnection sendSynchronousRequest:fileRequest returningResponse:&response error:&fileError];
 
-    if (data && response) {
-        NSError *requestError = nil;
-
-        destinationPath = [destinationPath stringByReplacingOccurrencesOfString:@" " withString:@"+"];
-
-        NSMutableURLRequest *request = [self.requestSerializer multipartFormRequestWithMethod:method URLString:[[self.baseURL URLByAppendingPathComponent:destinationPath] absoluteString] parameters:parameters constructingBodyWithBlock:^(id <AFMultipartFormData> formData) {
-            if (![parameters valueForKey:@"key"]) {
-                [formData appendPartWithFormData:[[filePath lastPathComponent] dataUsingEncoding:NSUTF8StringEncoding] name:@"key"];
-            }
-            [formData appendPartWithFileData:data name:@"file" fileName:[filePath lastPathComponent] mimeType:[response MIMEType]];
-        } error:&requestError];
-
-        if (!request || requestError) {
-            failure(requestError);
-            return;
+    if (fileError || !response || !data) {
+        if (failure) {
+            failure(fileError);
         }
 
-        AFHTTPRequestOperation *requestOperation = [self HTTPRequestOperationWithRequest:request success:^(__unused AFHTTPRequestOperation *operation, id responseObject) {
-            if (success) {
-                success(responseObject);
-            }
-        } failure:^(__unused AFHTTPRequestOperation *operation, NSError *error) {
-            if (failure) {
-                failure(error);
-            }
-        }];
-
-        [requestOperation setUploadProgressBlock:progress];
-
-        [self.operationQueue addOperation:requestOperation];
-    } else {
-        failure(fileError);
+        return;
     }
+
+    destinationPath = [destinationPath stringByReplacingOccurrencesOfString:@" " withString:@"+"];
+
+    NSError *requestError = nil;
+    NSMutableURLRequest *request = [self.requestSerializer multipartFormRequestWithMethod:method URLString:[[self.baseURL URLByAppendingPathComponent:destinationPath] absoluteString] parameters:parameters constructingBodyWithBlock:^(id <AFMultipartFormData> formData) {
+        if (![parameters valueForKey:@"key"]) {
+            [formData appendPartWithFormData:[[filePath lastPathComponent] dataUsingEncoding:NSUTF8StringEncoding] name:@"key"];
+        }
+
+        [formData appendPartWithFileData:data name:@"file" fileName:[filePath lastPathComponent] mimeType:[response MIMEType]];
+    } error:&requestError];
+
+    if (!request || requestError) {
+        if (failure) {
+            failure(requestError);
+        }
+
+        return;
+    }
+
+    AFHTTPRequestOperation *requestOperation = [self HTTPRequestOperationWithRequest:request success:^(__unused AFHTTPRequestOperation *operation, id responseObject) {
+        if (success) {
+            success(responseObject);
+        }
+    } failure:^(__unused AFHTTPRequestOperation *operation, NSError *error) {
+        if (failure) {
+            failure(error);
+        }
+    }];
+
+    [requestOperation setUploadProgressBlock:progress];
+
+    [self.operationQueue addOperation:requestOperation];
 }
 
 #pragma mark - NSKeyValueObserving
