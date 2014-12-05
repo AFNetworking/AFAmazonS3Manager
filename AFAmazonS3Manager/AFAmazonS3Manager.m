@@ -72,6 +72,8 @@ NSString * const AFAmazonS3ManagerErrorDomain = @"com.alamofire.networking.s3.er
                                     success:(void (^)(id responseObject))success
                                     failure:(void (^)(NSError *error))failure
 {
+    path = [path stringByReplacingOccurrencesOfString:@" " withString:@"+"];
+
     NSMutableURLRequest *request = [self.requestSerializer requestWithMethod:method URLString:[[self.baseURL URLByAppendingPathComponent:path] absoluteString] parameters:parameters error:nil];
     AFHTTPRequestOperation *requestOperation = [self HTTPRequestOperationWithRequest:request success:^(__unused AFHTTPRequestOperation *operation, id responseObject) {
         if (success) {
