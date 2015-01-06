@@ -106,8 +106,10 @@ static NSString * AFAWSSignatureForRequest(NSURLRequest *request, NSString *buck
         id value = [mutableAMZHeaderFields objectForKey:field];
         [mutableCanonicalizedAMZHeaderString appendFormat:@"%@:%@\n", field, value];
     }
-
-    NSString *canonicalizedResource = bucket ? [NSString stringWithFormat:@"/%@%@", bucket, request.URL.path] : request.URL.path;
+    
+    NSString *urlEscapedPath = [[request.URL.path stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding] stringByReplacingOccurrencesOfString:@"&" withString:@"%26"];
+    
+    NSString *canonicalizedResource = bucket ? [NSString stringWithFormat:@"/%@%@", bucket, urlEscapedPath] : urlEscapedPath;
     NSString *method = [request HTTPMethod];
     NSString *contentMD5 = [request valueForHTTPHeaderField:@"Content-MD5"];
     NSString *contentType = [request valueForHTTPHeaderField:@"Content-Type"];
