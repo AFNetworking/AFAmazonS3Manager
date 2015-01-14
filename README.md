@@ -2,8 +2,6 @@
 
 `AFAmazonS3Manager` is an `AFHTTPRequestOperationManager` subclass for interacting with the [Amazon S3 API](http://aws.amazon.com/s3/).
 
-As the S3 API returns XML responses, you may find it useful to set [AFOnoResponseSerializer](https://github.com/AFNetworking/AFOnoResponseSerializer) as the response serializer.
-
 ## Example Usage
 
 ```objective-c
