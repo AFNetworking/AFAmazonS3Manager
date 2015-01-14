@@ -19,9 +19,8 @@ NSString *destinationPath = @"/pathOnS3/to/file.txt";
                      progress:^(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite) {
                         NSLog(@"%f%% Uploaded", (totalBytesWritten / (totalBytesExpectedToWrite * 1.0f) * 100));
 }
-                      success:^(id responseObject) {
-                        NSURL *resultURL = [s3manager.requestSerializer.endpointURL URLByAppendingPathComponent:destinationPath];
-                        NSLog(@"Upload Complete: %@", resultURL);
+                      success:^(AFAmazonS3ResponseObject *responseObject) {
+                        NSLog(@"Upload Complete: %@", responseObject.URL);
 }
                       failure:^(NSError *error) {
                          NSLog(@"Error: %@", error);
