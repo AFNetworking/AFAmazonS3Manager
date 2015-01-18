@@ -24,6 +24,10 @@
 
 NSString * const AFAmazonS3ManagerErrorDomain = @"com.alamofire.networking.s3.error";
 
+static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
+    return [path stringByReplacingOccurrencesOfString:@" " withString:@"+"];
+}
+
 @interface AFAmazonS3Manager ()
 @property (readwrite, nonatomic, strong) NSURL *baseURL;
 @end
@@ -235,7 +239,7 @@ NSString * const AFAmazonS3ManagerErrorDomain = @"com.alamofire.networking.s3.er
         return;
     }
 
-    destinationPath = [destinationPath stringByReplacingOccurrencesOfString:@" " withString:@"+"];
+    destinationPath = AFPathByEscapingSpacesWithPlusSigns(destinationPath);
 
     NSMutableURLRequest *request = nil;
     if ([method compare:@"POST" options:NSCaseInsensitiveSearch] == NSOrderedSame) {
