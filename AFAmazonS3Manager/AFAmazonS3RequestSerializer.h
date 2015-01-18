@@ -119,6 +119,7 @@ extern NSString * const AFAmazonS3USStandardRegion;
 extern NSString * const AFAmazonS3USWest1Region;
 extern NSString * const AFAmazonS3USWest2Region;
 extern NSString * const AFAmazonS3EUWest1Region;
+extern NSString * const AFAmazonS3EUCentral1Region;
 extern NSString * const AFAmazonS3APSoutheast1Region;
 extern NSString * const AFAmazonS3APSoutheast2Region;
 extern NSString * const AFAmazonS3APNortheast2Region;
