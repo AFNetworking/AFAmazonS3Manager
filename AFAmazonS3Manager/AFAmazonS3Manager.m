@@ -130,6 +130,10 @@ static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
                    success:(void (^)(NSHTTPURLResponse *response))success
                    failure:(void (^)(NSError *error))failure
 {
+    NSParameterAssert(path);
+
+    path = AFPathByEscapingSpacesWithPlusSigns(path);
+
     NSMutableURLRequest *request = [self.requestSerializer requestWithMethod:@"HEAD" URLString:[[self.baseURL URLByAppendingPathComponent:path] absoluteString] parameters:nil error:nil];
     AFHTTPRequestOperation *requestOperation = [self HTTPRequestOperationWithRequest:request success:^(AFHTTPRequestOperation *operation, __unused id responseObject) {
         if (success) {
@@ -149,6 +153,10 @@ static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
                   success:(void (^)(id responseObject, NSData *responseData))success
                   failure:(void (^)(NSError *error))failure
 {
+    NSParameterAssert(path);
+
+    path = AFPathByEscapingSpacesWithPlusSigns(path);
+
     NSMutableURLRequest *request = [self.requestSerializer requestWithMethod:@"GET" URLString:[[self.baseURL URLByAppendingPathComponent:path] absoluteString] parameters:nil error:nil];
     AFHTTPRequestOperation *requestOperation = [self HTTPRequestOperationWithRequest:request success:^(AFHTTPRequestOperation *operation, id responseObject) {
         if (success) {
@@ -171,6 +179,10 @@ static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
                   success:(void (^)(id responseObject))success
                   failure:(void (^)(NSError *error))failure
 {
+    NSParameterAssert(path);
+
+    path = AFPathByEscapingSpacesWithPlusSigns(path);
+
     NSMutableURLRequest *request = [self.requestSerializer requestWithMethod:@"GET" URLString:[[self.baseURL URLByAppendingPathComponent:path] absoluteString] parameters:nil error:nil];
     AFHTTPRequestOperation *requestOperation = [self HTTPRequestOperationWithRequest:request success:^(__unused AFHTTPRequestOperation *operation, id responseObject) {
         if (success) {
@@ -209,13 +221,6 @@ static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
     [self setObjectWithMethod:@"PUT" file:path destinationPath:destinationPath parameters:parameters progress:progress success:success failure:failure];
 }
 
-- (void)deleteObjectWithPath:(NSString *)path
-                     success:(void (^)(id responseObject))success
-                     failure:(void (^)(NSError *error))failure
-{
-    [self enqueueS3RequestOperationWithMethod:@"DELETE" path:path parameters:nil success:success failure:failure];
-}
-
 - (void)setObjectWithMethod:(NSString *)method
                        file:(NSString *)filePath
             destinationPath:(NSString *)destinationPath
@@ -224,6 +229,10 @@ static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
                     success:(void (^)(id responseObject))success
                     failure:(void (^)(NSError *error))failure
 {
+    NSParameterAssert(method);
+    NSParameterAssert(filePath);
+    NSParameterAssert(destinationPath);
+
     NSMutableURLRequest *fileRequest = [NSMutableURLRequest requestWithURL:[NSURL fileURLWithPath:filePath]];
     fileRequest.cachePolicy = NSURLRequestReloadIgnoringLocalCacheData;
 
@@ -277,6 +286,17 @@ static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
     [requestOperation setUploadProgressBlock:progress];
 
     [self.operationQueue addOperation:requestOperation];
+}
+
+- (void)deleteObjectWithPath:(NSString *)path
+                     success:(void (^)(id responseObject))success
+                     failure:(void (^)(NSError *error))failure
+{
+    NSParameterAssert(path);
+
+    path = AFPathByEscapingSpacesWithPlusSigns(path);
+
+    [self enqueueS3RequestOperationWithMethod:@"DELETE" path:path parameters:nil success:success failure:failure];
 }
 
 #pragma mark - NSKeyValueObserving

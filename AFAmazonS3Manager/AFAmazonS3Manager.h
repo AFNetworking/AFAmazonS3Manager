@@ -125,7 +125,7 @@
 /**
  Retrieves information about an object for a user with read access without fetching the object.
 
- @param path The object path.
+ @param path The object path. Must not be `nil`.
  @param success A block object to be executed when the request operation finishes successfully. This block has no return value and takes a single argument: the response object from the server.
  @param failure A block object to be executed when the request operation finishes unsuccessfully, or that finishes successfully, but encountered an error while parsing the response data. This block has no return value and takes a single argument: the `NSError` object describing error that occurred.
  */
@@ -136,7 +136,7 @@
 /**
  Gets an object for a user that has read access to the object.
 
- @param path The object path.
+ @param path The object path. Must not be `nil`.
  @param progress A block object to be called when an undetermined number of bytes have been downloaded from the server. This block has no return value and takes three arguments: the number of bytes read since the last time the download progress block was called, the total bytes read, and the total bytes expected to be read during the request, as initially determined by the expected content size of the `NSHTTPURLResponse` object. This block may be called multiple times, and will execute on the main thread.
  @param success A block object to be executed when the request operation finishes successfully. This block has no return value and takes a single argument: the response object from the server.
  @param failure A block object to be executed when the request operation finishes unsuccessfully, or that finishes successfully, but encountered an error while parsing the response data. This block has no return value and takes a single argument: the `NSError` object describing error that occurred.
@@ -149,7 +149,7 @@
 /**
  Gets an object for a user that has read access to the object.
 
- @param path The object path.
+ @param path The object path. Must not be `nil`.
  @param outputStream The `NSOutputStream` object receiving data from the request.
  @param progress A block object to be called when an undetermined number of bytes have been downloaded from the server. This block has no return value and takes three arguments: the number of bytes read since the last time the download progress block was called, the total bytes read, and the total bytes expected to be read during the request, as initially determined by the expected content size of the `NSHTTPURLResponse` object. This block may be called multiple times, and will execute on the main thread.
  @param success A block object to be executed when the request operation finishes successfully. This block has no return value and takes a single argument: the response object from the server.
@@ -164,8 +164,8 @@
 /**
  Adds an object to a bucket using forms.
 
- @param path The path to the local file.
- @param destinationPath The destination path for the remote file.
+ @param path The path to the local file. Must not be `nil`.
+ @param destinationPath The destination path for the remote file. Must not be `nil`.
  @param parameters The parameters to be encoded and set in the request HTTP body.
  @param progress A block object to be called when an undetermined number of bytes have been uploaded to the server. This block has no return value and takes three arguments: the number of bytes written since the last time the upload progress block was called, the total bytes written, and the total bytes expected to be written during the request, as initially determined by the length of the HTTP body. This block may be called multiple times, and will execute on the main thread.
  @param success A block object to be executed when the request operation finishes successfully. This block has no return value and takes a single argument: the response object from the server.
@@ -183,8 +183,8 @@
 /**
  Adds an object to a bucket for a user that has write access to the bucket. A success response indicates the object was successfully stored; if the object already exists, it will be overwritten.
 
- @param path The path to the local file.
- @param destinationPath The destination path for the remote file, including its name.
+ @param path The path to the local file. Must not be `nil`.
+ @param destinationPath The destination path for the remote file, including its name. Must not be `nil`.
  @param parameters The parameters to be encoded and set in the request HTTP body.
  @param progress A block object to be called when an undetermined number of bytes have been uploaded to the server. This block has no return value and takes three arguments: the number of bytes written since the last time the upload progress block was called, the total bytes written, and the total bytes expected to be written during the request, as initially determined by the length of the HTTP body. This block may be called multiple times, and will execute on the main thread.
  @param success A block object to be executed when the request operation finishes successfully. This block has no return value and takes a single argument: the response object from the server.
@@ -202,7 +202,7 @@
 /**
  Deletes the specified object. Once deleted, there is no method to restore or undelete an object.
 
- @param path The path for the remote file to be deleted.
+ @param path The path for the remote file to be deleted. Must not be `nil`.
  @param success A block object to be executed when the request operation finishes successfully. This block has no return value and takes a single argument: the response object from the server.
  @param failure A block object to be executed when the request operation finishes unsuccessfully, or that finishes successfully, but encountered an error while parsing the response data. This block has no return value and takes a single argument: the `NSError` object describing error that occurred.
  */
