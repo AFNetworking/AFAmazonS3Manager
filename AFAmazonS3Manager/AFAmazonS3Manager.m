@@ -105,6 +105,8 @@ static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
           success:(void (^)(id responseObject))success
           failure:(void (^)(NSError *error))failure
 {
+    NSParameterAssert(bucket);
+
     [self enqueueS3RequestOperationWithMethod:@"GET" path:bucket parameters:nil success:success failure:failure];
 }
 
@@ -113,6 +115,8 @@ static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
           success:(void (^)(id responseObject))success
           failure:(void (^)(NSError *error))failure
 {
+    NSParameterAssert(bucket);
+
     [self enqueueS3RequestOperationWithMethod:@"PUT" path:bucket parameters:parameters success:success failure:failure];
 
 }
@@ -121,6 +125,8 @@ static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
              success:(void (^)(id responseObject))success
              failure:(void (^)(NSError *error))failure
 {
+    NSParameterAssert(bucket);
+
     [self enqueueS3RequestOperationWithMethod:@"DELETE" path:bucket parameters:nil success:success failure:failure];
 }
 

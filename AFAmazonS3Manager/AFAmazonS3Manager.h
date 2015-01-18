@@ -86,7 +86,7 @@
 /**
  Lists information about the objects in a bucket for a user that has read access to the bucket.
 
- @param bucket The S3 bucket to get.
+ @param bucket The S3 bucket to get. Must not be `nil`.
  @param success A block object to be executed when the request operation finishes successfully. This block has no return value and takes a single argument: the response object from the server.
  @param failure A block object to be executed when the request operation finishes unsuccessfully, or that finishes successfully, but encountered an error while parsing the response data. This block has no return value and takes a single argument: the `NSError` object describing error that occurred.
  */
@@ -97,7 +97,7 @@
 /**
  Creates a new bucket belonging to the account of the authenticated request sender. Optionally, you can specify a EU (Ireland) or US-West (N. California) location constraint.
 
- @param bucket The S3 bucket to create.
+ @param bucket The S3 bucket to create. Must not be `nil`.
  @param parameters The parameters to be encoded and set in the request HTTP body.
  @param success A block object to be executed when the request operation finishes successfully. This block has no return value and takes a single argument: the response object from the server.
  @param failure A block object to be executed when the request operation finishes unsuccessfully, or that finishes successfully, but encountered an error while parsing the response data. This block has no return value and takes a single argument: the `NSError` object describing error that occurred.
@@ -110,7 +110,7 @@
 /**
  Deletes the specified bucket. All objects in the bucket must be deleted before the bucket itself can be deleted.
 
- @param bucket The S3 bucket to be delete.
+ @param bucket The S3 bucket to be delete. Must not be `nil`.
  @param success A block object to be executed when the request operation finishes successfully. This block has no return value and takes a single argument: the response object from the server.
  @param failure A block object to be executed when the request operation finishes unsuccessfully, or that finishes successfully, but encountered an error while parsing the response data. This block has no return value and takes a single argument: the `NSError` object describing error that occurred.
  */
