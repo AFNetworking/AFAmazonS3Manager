@@ -71,11 +71,11 @@ static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
 
 #pragma mark -
 
-- (void)enqueueS3RequestOperationWithMethod:(NSString *)method
-                                       path:(NSString *)path
-                                 parameters:(NSDictionary *)parameters
-                                    success:(void (^)(id responseObject))success
-                                    failure:(void (^)(NSError *error))failure
+- (AFHTTPRequestOperation *)enqueueS3RequestOperationWithMethod:(NSString *)method
+                                                           path:(NSString *)path
+                                                     parameters:(NSDictionary *)parameters
+                                                        success:(void (^)(id responseObject))success
+                                                        failure:(void (^)(NSError *error))failure
 {
     NSMutableURLRequest *request = [self.requestSerializer requestWithMethod:method URLString:[[self.baseURL URLByAppendingPathComponent:path] absoluteString] parameters:parameters error:nil];
     AFHTTPRequestOperation *requestOperation = [self HTTPRequestOperationWithRequest:request success:^(__unused AFHTTPRequestOperation *operation, id responseObject) {
@@ -89,53 +89,54 @@ static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
     }];
 
     [self.operationQueue addOperation:requestOperation];
+    
+    return requestOperation;
 }
 
 
 #pragma mark Service Operations
 
-- (void)getServiceWithSuccess:(void (^)(id responseObject))success
-                      failure:(void (^)(NSError *error))failure
+- (AFHTTPRequestOperation *)getServiceWithSuccess:(void (^)(id responseObject))success
+                                          failure:(void (^)(NSError *error))failure
 {
-    [self enqueueS3RequestOperationWithMethod:@"GET" path:@"/" parameters:nil success:success failure:failure];
+    return [self enqueueS3RequestOperationWithMethod:@"GET" path:@"/" parameters:nil success:success failure:failure];
 }
 
 #pragma mark Bucket Operations
 
-- (void)getBucket:(NSString *)bucket
-          success:(void (^)(id responseObject))success
-          failure:(void (^)(NSError *error))failure
+- (AFHTTPRequestOperation *)getBucket:(NSString *)bucket
+                              success:(void (^)(id responseObject))success
+                              failure:(void (^)(NSError *error))failure
 {
     NSParameterAssert(bucket);
 
-    [self enqueueS3RequestOperationWithMethod:@"GET" path:bucket parameters:nil success:success failure:failure];
+    return [self enqueueS3RequestOperationWithMethod:@"GET" path:bucket parameters:nil success:success failure:failure];
 }
 
-- (void)putBucket:(NSString *)bucket
-       parameters:(NSDictionary *)parameters
-          success:(void (^)(id responseObject))success
-          failure:(void (^)(NSError *error))failure
+- (AFHTTPRequestOperation *)putBucket:(NSString *)bucket
+                           parameters:(NSDictionary *)parameters
+                              success:(void (^)(id responseObject))success
+                              failure:(void (^)(NSError *error))failure
 {
     NSParameterAssert(bucket);
-
-    [self enqueueS3RequestOperationWithMethod:@"PUT" path:bucket parameters:parameters success:success failure:failure];
-
+    
+    return [self enqueueS3RequestOperationWithMethod:@"PUT" path:bucket parameters:parameters success:success failure:failure];
 }
 
-- (void)deleteBucket:(NSString *)bucket
-             success:(void (^)(id responseObject))success
-             failure:(void (^)(NSError *error))failure
+- (AFHTTPRequestOperation *)deleteBucket:(NSString *)bucket
+                                 success:(void (^)(id responseObject))success
+                                 failure:(void (^)(NSError *error))failure
 {
     NSParameterAssert(bucket);
-
-    [self enqueueS3RequestOperationWithMethod:@"DELETE" path:bucket parameters:nil success:success failure:failure];
+    
+    return [self enqueueS3RequestOperationWithMethod:@"DELETE" path:bucket parameters:nil success:success failure:failure];
 }
 
 #pragma mark Object Operations
 
-- (void)headObjectWithPath:(NSString *)path
-                   success:(void (^)(NSHTTPURLResponse *response))success
-                   failure:(void (^)(NSError *error))failure
+- (AFHTTPRequestOperation *)headObjectWithPath:(NSString *)path
+                                       success:(void (^)(NSHTTPURLResponse *response))success
+                                       failure:(void (^)(NSError *error))failure
 {
     NSParameterAssert(path);
 
@@ -153,12 +154,14 @@ static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
     }];
 
     [self.operationQueue addOperation:requestOperation];
+    
+    return requestOperation;
 }
 
-- (void)getObjectWithPath:(NSString *)path
-                 progress:(void (^)(NSUInteger bytesRead, long long totalBytesRead, long long totalBytesExpectedToRead))progress
-                  success:(void (^)(id responseObject, NSData *responseData))success
-                  failure:(void (^)(NSError *error))failure
+- (AFHTTPRequestOperation *)getObjectWithPath:(NSString *)path
+                                     progress:(void (^)(NSUInteger bytesRead, long long totalBytesRead, long long totalBytesExpectedToRead))progress
+                                      success:(void (^)(id responseObject, NSData *responseData))success
+                                      failure:(void (^)(NSError *error))failure
 {
     NSParameterAssert(path);
 
@@ -178,13 +181,15 @@ static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
     [requestOperation setDownloadProgressBlock:progress];
 
     [self.operationQueue addOperation:requestOperation];
+    
+    return requestOperation;
 }
 
-- (void)getObjectWithPath:(NSString *)path
-             outputStream:(NSOutputStream *)outputStream
-                 progress:(void (^)(NSUInteger bytesRead, long long totalBytesRead, long long totalBytesExpectedToRead))progress
-                  success:(void (^)(id responseObject))success
-                  failure:(void (^)(NSError *error))failure
+- (AFHTTPRequestOperation *)getObjectWithPath:(NSString *)path
+                                 outputStream:(NSOutputStream *)outputStream
+                                     progress:(void (^)(NSUInteger bytesRead, long long totalBytesRead, long long totalBytesExpectedToRead))progress
+                                      success:(void (^)(id responseObject))success
+                                      failure:(void (^)(NSError *error))failure
 {
     NSParameterAssert(path);
 
@@ -206,35 +211,37 @@ static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
     [requestOperation setDownloadProgressBlock:progress];
 
     [self.operationQueue addOperation:requestOperation];
+    
+    return requestOperation;
 }
 
-- (void)postObjectWithFile:(NSString *)path
-           destinationPath:(NSString *)destinationPath
-                parameters:(NSDictionary *)parameters
-                  progress:(void (^)(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite))progress
-                   success:(void (^)(id responseObject))success
-                   failure:(void (^)(NSError *error))failure
+- (AFHTTPRequestOperation *)postObjectWithFile:(NSString *)path
+                               destinationPath:(NSString *)destinationPath
+                                    parameters:(NSDictionary *)parameters
+                                      progress:(void (^)(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite))progress
+                                       success:(void (^)(id responseObject))success
+                                       failure:(void (^)(NSError *error))failure
 {
-    [self setObjectWithMethod:@"POST" file:path destinationPath:destinationPath parameters:parameters progress:progress success:success failure:failure];
+    return [self setObjectWithMethod:@"POST" file:path destinationPath:destinationPath parameters:parameters progress:progress success:success failure:failure];
 }
 
-- (void)putObjectWithFile:(NSString *)path
-          destinationPath:(NSString *)destinationPath
-               parameters:(NSDictionary *)parameters
-                 progress:(void (^)(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite))progress
-                  success:(void (^)(id responseObject))success
-                  failure:(void (^)(NSError *error))failure
+- (AFHTTPRequestOperation *)putObjectWithFile:(NSString *)path
+                              destinationPath:(NSString *)destinationPath
+                                   parameters:(NSDictionary *)parameters
+                                     progress:(void (^)(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite))progress
+                                      success:(void (^)(id responseObject))success
+                                      failure:(void (^)(NSError *error))failure
 {
-    [self setObjectWithMethod:@"PUT" file:path destinationPath:destinationPath parameters:parameters progress:progress success:success failure:failure];
+    return [self setObjectWithMethod:@"PUT" file:path destinationPath:destinationPath parameters:parameters progress:progress success:success failure:failure];
 }
 
-- (void)setObjectWithMethod:(NSString *)method
-                       file:(NSString *)filePath
-            destinationPath:(NSString *)destinationPath
-                 parameters:(NSDictionary *)parameters
-                   progress:(void (^)(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite))progress
-                    success:(void (^)(id responseObject))success
-                    failure:(void (^)(NSError *error))failure
+- (AFHTTPRequestOperation *)setObjectWithMethod:(NSString *)method
+                                           file:(NSString *)filePath
+                                destinationPath:(NSString *)destinationPath
+                                     parameters:(NSDictionary *)parameters
+                                       progress:(void (^)(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite))progress
+                                        success:(void (^)(id responseObject))success
+                                        failure:(void (^)(NSError *error))failure
 {
     NSParameterAssert(method);
     NSParameterAssert(filePath);
@@ -252,7 +259,7 @@ static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
             failure(fileError);
         }
 
-        return;
+        return nil;
     }
 
     destinationPath = AFPathByEscapingSpacesWithPlusSigns(destinationPath);
@@ -273,7 +280,7 @@ static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
                 failure(requestError);
             }
 
-            return;
+            return nil;
         }
     } else {
         request = [self.requestSerializer requestWithMethod:method URLString:[[self.baseURL URLByAppendingPathComponent:destinationPath] absoluteString] parameters:parameters error:nil];
@@ -293,17 +300,19 @@ static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
     [requestOperation setUploadProgressBlock:progress];
 
     [self.operationQueue addOperation:requestOperation];
+    
+    return requestOperation;
 }
 
-- (void)deleteObjectWithPath:(NSString *)path
-                     success:(void (^)(id responseObject))success
-                     failure:(void (^)(NSError *error))failure
+- (AFHTTPRequestOperation *)deleteObjectWithPath:(NSString *)path
+                                         success:(void (^)(id responseObject))success
+                                         failure:(void (^)(NSError *error))failure
 {
     NSParameterAssert(path);
 
     path = AFPathByEscapingSpacesWithPlusSigns(path);
 
-    [self enqueueS3RequestOperationWithMethod:@"DELETE" path:path parameters:nil success:success failure:failure];
+    return [self enqueueS3RequestOperationWithMethod:@"DELETE" path:path parameters:nil success:success failure:failure];
 }
 
 #pragma mark - NSKeyValueObserving
