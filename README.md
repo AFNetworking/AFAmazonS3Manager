@@ -6,8 +6,8 @@
 
 ```objective-c
 AFAmazonS3Manager *s3Manager = [[AFAmazonS3Manager alloc] initWithAccessKeyID:@"..." secret:@"..."];
-s3manager.requestSerializer.region = AFAmazonS3USWest1Region;
-s3manager.requestSerializer.bucket = @"my-bucket-name";
+s3Manager.requestSerializer.region = AFAmazonS3USWest1Region;
+s3Manager.requestSerializer.bucket = @"my-bucket-name";
 
 NSString *destinationPath = @"/pathOnS3/to/file.txt";
 
