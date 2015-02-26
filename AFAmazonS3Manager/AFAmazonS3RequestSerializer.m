@@ -207,9 +207,9 @@ static NSString * AFAWSSignatureForRequest(NSURLRequest *request, NSString *buck
         expiration = [[NSDate date] dateByAddingTimeInterval:AFAmazonS3DefaultExpirationTimeInterval];
     }
 
-    if (self.accessKey) {
-        NSString *expires = @([expiration timeIntervalSince1970]).stringValue;
-        NSString *signature = AFAWSSignatureForRequest(request, self.bucket, expires, self.accessKey);
+    if (self.accessKey && self.secret) {
+        NSString *expires = @((long)[expiration timeIntervalSince1970]).stringValue;
+        NSString *signature = AFAWSSignatureForRequest(request, self.bucket, expires, self.secret);
 
         NSDictionary *parameters = @{
                                      @"AWSAccessKeyId": self.accessKey,
