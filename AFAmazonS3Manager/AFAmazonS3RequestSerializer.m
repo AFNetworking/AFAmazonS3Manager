@@ -208,7 +208,7 @@ static NSString * AFAWSSignatureForRequest(NSURLRequest *request, NSString *buck
     }
 
     if (self.accessKey && self.secret) {
-        NSString *expires = @((long)[expiration timeIntervalSince1970]).stringValue;
+        NSString *expires = @((NSUInteger)[expiration timeIntervalSince1970]).stringValue;
         NSString *signature = AFAWSSignatureForRequest(request, self.bucket, expires, self.secret);
 
         NSDictionary *parameters = @{
