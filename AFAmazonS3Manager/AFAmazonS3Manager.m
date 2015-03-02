@@ -283,7 +283,15 @@ static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
             return nil;
         }
     } else {
-        request = [self.requestSerializer requestWithMethod:method URLString:[[self.baseURL URLByAppendingPathComponent:destinationPath] absoluteString] parameters:parameters error:nil];
+        request = [self.requestSerializer requestWithMethod:method URLString:[[self.baseURL URLByAppendingPathComponent:destinationPath] absoluteString] parameters:nil error:nil];
+        
+        // S3 expects parameters as headers for PUT requests
+        if (parameters != nil) {
+            for (id key in parameters) {
+                [request setValue:[parameters objectForKey:key] forHTTPHeaderField:key];
+            }
+        }
+        
         request.HTTPBody = data;
     }
 
