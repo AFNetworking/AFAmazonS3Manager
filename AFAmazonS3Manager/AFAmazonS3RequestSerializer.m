@@ -137,6 +137,8 @@ static NSString * AFAWSSignatureForRequest(NSURLRequest *request, NSString *buck
         return nil;
     }
 
+    self.cachePolicy = NSURLRequestReloadIgnoringCacheData;
+
     self.region = AFAmazonS3USStandardRegion;
     self.useSSL = YES;
 

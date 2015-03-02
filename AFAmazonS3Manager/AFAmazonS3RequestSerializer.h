@@ -23,7 +23,9 @@
 #import "AFURLRequestSerialization.h"
 
 /**
- `AFAmazonS3RequestSerializer` is an `AFHTTPRequestSerializer` subclass with convenience methods for creating requests for the Amazon S3 webservice, including creating an authorization header and building an endpoint URL for a given bucket, region, and TLS preferences.
+ `AFAmazonS3RequestSerializer` is an `AFHTTPRequestSerializer` subclass with convenience methods for creating requests for the Amazon S3 webservice, including creating an authorization header and building an endpoint URL for a given bucket, region, and TLS preferences. 
+ 
+ @discussion Due to aggressive cache policies from the Foundation URL Loading System cause the unsupported `If-Modified-Since` header to be sent for certain requests, the default `cachePolicy` is `NSURLRequestReloadIgnoringCacheData`.
  */
 @interface AFAmazonS3RequestSerializer : AFHTTPRequestSerializer
 
