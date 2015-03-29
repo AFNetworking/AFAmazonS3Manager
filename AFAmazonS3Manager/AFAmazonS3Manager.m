@@ -35,6 +35,7 @@ static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
 
 @implementation AFAmazonS3Manager
 @synthesize baseURL = _s3_baseURL;
+@dynamic requestSerializer;
 
 - (instancetype)initWithBaseURL:(NSURL *)url {
     self = [super initWithBaseURL:url];
