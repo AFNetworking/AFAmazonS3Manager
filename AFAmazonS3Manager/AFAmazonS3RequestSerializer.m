@@ -164,7 +164,7 @@ static NSString * AFAWSSignatureForRequest(NSURLRequest *request, NSString *buck
     NSString *URLString = nil;
     NSString *scheme = self.useSSL ? @"https" : @"http";
     if (self.bucket) {
-        URLString = [NSString stringWithFormat:@"%@://%@.%@", scheme, self.bucket, self.region];
+        URLString = [NSString stringWithFormat:@"%@://%@/%@", scheme, self.region, self.bucket];
     } else {
         URLString = [NSString stringWithFormat:@"%@://%@", scheme, self.region];
     }
