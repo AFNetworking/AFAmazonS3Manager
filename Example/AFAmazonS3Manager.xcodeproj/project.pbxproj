@@ -84,8 +84,8 @@
 		6003F5B5195388D20070C39A /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				6003F5BB195388D20070C39A /* Tests.m */,
 				6003F5B6195388D20070C39A /* Supporting Files */,
+				6003F5BB195388D20070C39A /* Tests.m */,
 			);
 			path = Tests;
 			sourceTree = "<group>";

@@ -1,4 +1,4 @@
-// AFAmazonS3Manager.h
+// Tests.h
 //
 // Copyright (c) 2011–2015 AFNetworking (http://afnetworking.com/)
 //
