@@ -1,12 +1,11 @@
 language: objective-c
 before_install:
-  - brew update
-  - brew upgrade xctool
-  - gem install cocoapods
-install:
-  - bundle install --without=documentation --path ../travis_bundle_dir
-  - cd Example
-  - bundle exec pod install
-  - cd ../
-script: xctool -workspace Example/AFAmazonS3Manager.xcworkspace -scheme AFAmazonS3Manager-Example -configuration Debug -sdk iphonesimulator test
-after_success: bundle exec slather
+  - gem install cocoapods xcpretty slather -N
+cache: cocoapods
+env:
+- LC_CTYPE=en_US.UTF-8 LANG=en_US.UTF-8
+podfile: Example/Podfile
+script:
+  - set -o pipefail && xcodebuild -workspace Example/AFAmazonS3Manager.xcworkspace -scheme AFAmazonS3Manager-Example -configuration Debug -sdk iphonesimulator GCC_INSTRUMENT_PROGRAM_FLOW_ARCS=YES GCC_GENERATE_TEST_COVERAGE_FILES=YES clean test | xcpretty -c
+- pod lib lint --quick
+after_success: slather
