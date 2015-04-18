@@ -7,17 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		14B3FCB01AE2B48E004E23FE /* AFAmaxonS3ResponseSerializerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 14B3FCAF1AE2B48E004E23FE /* AFAmaxonS3ResponseSerializerTest.m */; };
 		14CEBFEB1AE29548008E7221 /* AFAmazonS3RequestSerializerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 14CEBFEA1AE29548008E7221 /* AFAmazonS3RequestSerializerTest.m */; };
 		14CEBFEE1AE29CAA008E7221 /* AFAmazonS3ManagerRequestBlocker.m in Sources */ = {isa = PBXBuildFile; fileRef = 14CEBFED1AE29CAA008E7221 /* AFAmazonS3ManagerRequestBlocker.m */; };
 		6003F5B0195388D20070C39A /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F5AF195388D20070C39A /* XCTest.framework */; };
 		6003F5B1195388D20070C39A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F58D195388D20070C39A /* Foundation.framework */; };
 		6003F5B2195388D20070C39A /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F591195388D20070C39A /* UIKit.framework */; };
 		6003F5BA195388D20070C39A /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 6003F5B8195388D20070C39A /* InfoPlist.strings */; };
-		6003F5BC195388D20070C39A /* Tests.m in Sources */ = {isa = PBXBuildFile; fileRef = 6003F5BB195388D20070C39A /* Tests.m */; };
 		AEE733FC036EF828C5CCB09E /* libPods-AFAmazonS3Manager.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D588188BD6B40397677F45F8 /* libPods-AFAmazonS3Manager.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		14B3FCAF1AE2B48E004E23FE /* AFAmaxonS3ResponseSerializerTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AFAmaxonS3ResponseSerializerTest.m; sourceTree = "<group>"; };
 		14CEBFEA1AE29548008E7221 /* AFAmazonS3RequestSerializerTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AFAmazonS3RequestSerializerTest.m; sourceTree = "<group>"; };
 		14CEBFEC1AE29CAA008E7221 /* AFAmazonS3ManagerRequestBlocker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AFAmazonS3ManagerRequestBlocker.h; sourceTree = "<group>"; };
 		14CEBFED1AE29CAA008E7221 /* AFAmazonS3ManagerRequestBlocker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AFAmazonS3ManagerRequestBlocker.m; sourceTree = "<group>"; };
@@ -30,7 +31,6 @@
 		6003F5AF195388D20070C39A /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		6003F5B7195388D20070C39A /* Tests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Tests-Info.plist"; sourceTree = "<group>"; };
 		6003F5B9195388D20070C39A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		6003F5BB195388D20070C39A /* Tests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Tests.m; sourceTree = "<group>"; };
 		606FC2411953D9B200FFA9A0 /* Tests-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Tests-Prefix.pch"; sourceTree = "<group>"; };
 		8DEE708E7D64D325DEB641E3 /* AFAmazonS3Manager.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = AFAmazonS3Manager.podspec; path = ../AFAmazonS3Manager.podspec; sourceTree = "<group>"; };
 		9495624D9A05D545565516FA /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = LICENSE; path = ../LICENSE; sourceTree = "<group>"; };
@@ -89,11 +89,11 @@
 		6003F5B5195388D20070C39A /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				14CEBFEA1AE29548008E7221 /* AFAmazonS3RequestSerializerTest.m */,
-				6003F5B6195388D20070C39A /* Supporting Files */,
-				6003F5BB195388D20070C39A /* Tests.m */,
+				14B3FCAF1AE2B48E004E23FE /* AFAmaxonS3ResponseSerializerTest.m */,
 				14CEBFEC1AE29CAA008E7221 /* AFAmazonS3ManagerRequestBlocker.h */,
 				14CEBFED1AE29CAA008E7221 /* AFAmazonS3ManagerRequestBlocker.m */,
+				14CEBFEA1AE29548008E7221 /* AFAmazonS3RequestSerializerTest.m */,
+				6003F5B6195388D20070C39A /* Supporting Files */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -232,7 +232,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				14CEBFEB1AE29548008E7221 /* AFAmazonS3RequestSerializerTest.m in Sources */,
-				6003F5BC195388D20070C39A /* Tests.m in Sources */,
+				14B3FCB01AE2B48E004E23FE /* AFAmaxonS3ResponseSerializerTest.m in Sources */,
 				14CEBFEE1AE29CAA008E7221 /* AFAmazonS3ManagerRequestBlocker.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

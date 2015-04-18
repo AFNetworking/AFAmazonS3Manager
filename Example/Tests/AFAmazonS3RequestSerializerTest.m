@@ -30,7 +30,7 @@
 
 @interface AFAmazonS3RequestSerializerTest : XCTestCase
 
-@property (nonatomic, strong) AFAmazonS3RequestSerializer *requestSerializer;
+@property (nonatomic) AFAmazonS3RequestSerializer *requestSerializer;
 
 @end
 
@@ -144,6 +144,31 @@
     [self.requestSerializer preSignedRequestWithRequest:request expiration:[NSDate date] error:&error];
     
     XCTAssert(error == nil);
+    OCMVerify(partial);
+}
+
+- (void)testRequestWithMethodAddsSecurityTokenHeader {
+    NSError *error;
+    [self.requestSerializer setAccessKeyID:@"access_key" secret:@"secret"];
+    self.requestSerializer.sessionToken = @"session_token";
+    
+    NSURLRequest *returnedRequest = [self.requestSerializer requestWithMethod:@"GET" URLString:@"http://s3-eu-west-1.amazonaws.com/example/example" parameters:@{} error:&error];
+    
+    XCTAssert(error == nil);
+    XCTAssert(returnedRequest.allHTTPHeaderFields[@"x-amz-security-token"] != nil);
+}
+
+- (void)testMultipartRequestWithMetodAddsSecurityTokenHeader {
+    NSError *error;
+    [self.requestSerializer setAccessKeyID:@"access_key" secret:@"secret"];
+    self.requestSerializer.sessionToken = @"session_token";
+    
+    NSURLRequest *returnedRequest = [self.requestSerializer multipartFormRequestWithMethod:@"POST" URLString:@"http://s3-eu-west-1.amazonaws.com/example/example" parameters:@{} constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
+        
+    } error:&error];
+
+    XCTAssert(error == nil);
+    XCTAssert(returnedRequest.allHTTPHeaderFields[@"x-amz-security-token"] != nil);
 }
 
 @end
