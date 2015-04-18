@@ -1,4 +1,4 @@
-// AFAmazonS3RequestSerializerTest.h
+// AFAmazonS3ManagerRequestBlocker.h
 //
 // Copyright (c) 2011–2015 AFNetworking (http://afnetworking.com/)
 //

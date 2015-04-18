@@ -136,15 +136,15 @@
     [self.requestSerializer setAccessKeyID:@"access_key" secret:@"secret"];
     
     id partial = [OCMockObject partialMockForObject:self.requestSerializer];
-    [[partial expect] requestBySerializingRequest:[OCMArg any] withParameters:[OCMArg checkWithBlock:^(id value) {
+    [[[partial expect] andForwardToRealObject] requestBySerializingRequest:[OCMArg any] withParameters:[OCMArg checkWithBlock:^(id value) {
         BOOL validParameters = [value[@"AWSAccessKeyId"] isEqualToString:@"access_key"] && value[@"Expires"] != nil && value[@"Signature"] != nil;
         return validParameters;
-    }] error:&error];
+    }] error:[OCMArg anyObjectRef]];
     
     [self.requestSerializer preSignedRequestWithRequest:request expiration:[NSDate date] error:&error];
     
     XCTAssert(error == nil);
-    OCMVerify(partial);
+    OCMVerifyAll(partial);
 }
 
 - (void)testRequestWithMethodAddsSecurityTokenHeader {

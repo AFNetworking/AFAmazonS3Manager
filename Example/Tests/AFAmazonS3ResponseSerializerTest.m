@@ -1,4 +1,4 @@
-// AFAmaxonS3ResponseSerializerTest.h
+// AFAmazonS3ResponseSerializerTest.h
 //
 // Copyright (c) 2011–2015 AFNetworking (http://afnetworking.com/)
 //

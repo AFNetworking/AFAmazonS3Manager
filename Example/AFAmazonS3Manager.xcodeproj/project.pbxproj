@@ -7,7 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		14B3FCB01AE2B48E004E23FE /* AFAmaxonS3ResponseSerializerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 14B3FCAF1AE2B48E004E23FE /* AFAmaxonS3ResponseSerializerTest.m */; };
+		14B3FCB01AE2B48E004E23FE /* AFAmazonS3ResponseSerializerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 14B3FCAF1AE2B48E004E23FE /* AFAmazonS3ResponseSerializerTest.m */; };
+		14B5F1A41AE2ED260072307C /* AFAmazonS3ManagerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 14B5F1A31AE2ED260072307C /* AFAmazonS3ManagerTest.m */; };
 		14CEBFEB1AE29548008E7221 /* AFAmazonS3RequestSerializerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 14CEBFEA1AE29548008E7221 /* AFAmazonS3RequestSerializerTest.m */; };
 		14CEBFEE1AE29CAA008E7221 /* AFAmazonS3ManagerRequestBlocker.m in Sources */ = {isa = PBXBuildFile; fileRef = 14CEBFED1AE29CAA008E7221 /* AFAmazonS3ManagerRequestBlocker.m */; };
 		6003F5B0195388D20070C39A /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F5AF195388D20070C39A /* XCTest.framework */; };
@@ -18,7 +19,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		14B3FCAF1AE2B48E004E23FE /* AFAmaxonS3ResponseSerializerTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AFAmaxonS3ResponseSerializerTest.m; sourceTree = "<group>"; };
+		14B3FCAF1AE2B48E004E23FE /* AFAmazonS3ResponseSerializerTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AFAmazonS3ResponseSerializerTest.m; sourceTree = "<group>"; };
+		14B5F1A31AE2ED260072307C /* AFAmazonS3ManagerTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AFAmazonS3ManagerTest.m; sourceTree = "<group>"; };
 		14CEBFEA1AE29548008E7221 /* AFAmazonS3RequestSerializerTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AFAmazonS3RequestSerializerTest.m; sourceTree = "<group>"; };
 		14CEBFEC1AE29CAA008E7221 /* AFAmazonS3ManagerRequestBlocker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AFAmazonS3ManagerRequestBlocker.h; sourceTree = "<group>"; };
 		14CEBFED1AE29CAA008E7221 /* AFAmazonS3ManagerRequestBlocker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AFAmazonS3ManagerRequestBlocker.m; sourceTree = "<group>"; };
@@ -89,9 +91,10 @@
 		6003F5B5195388D20070C39A /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				14B3FCAF1AE2B48E004E23FE /* AFAmaxonS3ResponseSerializerTest.m */,
+				14B3FCAF1AE2B48E004E23FE /* AFAmazonS3ResponseSerializerTest.m */,
 				14CEBFEC1AE29CAA008E7221 /* AFAmazonS3ManagerRequestBlocker.h */,
 				14CEBFED1AE29CAA008E7221 /* AFAmazonS3ManagerRequestBlocker.m */,
+				14B5F1A31AE2ED260072307C /* AFAmazonS3ManagerTest.m */,
 				14CEBFEA1AE29548008E7221 /* AFAmazonS3RequestSerializerTest.m */,
 				6003F5B6195388D20070C39A /* Supporting Files */,
 			);
@@ -231,8 +234,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				14B5F1A41AE2ED260072307C /* AFAmazonS3ManagerTest.m in Sources */,
 				14CEBFEB1AE29548008E7221 /* AFAmazonS3RequestSerializerTest.m in Sources */,
-				14B3FCB01AE2B48E004E23FE /* AFAmaxonS3ResponseSerializerTest.m in Sources */,
+				14B3FCB01AE2B48E004E23FE /* AFAmazonS3ResponseSerializerTest.m in Sources */,
 				14CEBFEE1AE29CAA008E7221 /* AFAmazonS3ManagerRequestBlocker.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
