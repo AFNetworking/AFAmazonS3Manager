@@ -24,6 +24,7 @@
 
 #import <XCTest/XCTest.h>
 #import <Expecta/Expecta.h>
+#import <OCMock/OCMock.h>
 
 #import "AFAmazonS3RequestSerializer.h"
 
@@ -93,12 +94,56 @@
     NSURLRequest *request = [[NSURLRequest alloc] initWithURL:[NSURL URLWithString:@"http://s3-eu-west-1.amazonaws.com/example/example"]];
     NSError *error;
     [self.requestSerializer setAccessKeyID:@"access_key" secret:@"secret"];
+    
     NSURLRequest *returnedRequest = [self.requestSerializer requestBySettingAuthorizationHeadersForRequest:request error:&error];
     
     XCTAssert(error == nil);
     XCTAssert(returnedRequest.allHTTPHeaderFields != nil);
     XCTAssert(returnedRequest.allHTTPHeaderFields[@"Authorization"] != nil);
     XCTAssert(returnedRequest.allHTTPHeaderFields[@"Date"] != nil);
+}
+
+- (void)testPreSignedRequestWithRequestRequiresRequest {
+    expect(^{
+        [self.requestSerializer preSignedRequestWithRequest:nil expiration:[NSDate date] error:nil];
+    }).to.raiseAny();
+}
+
+- (void)testPreSignedRequestWithRequestRequiresGetRequest {
+    expect(^{
+        NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:@"http://s3-eu-west-1.amazonaws.com/example/example"]];
+        request.HTTPMethod = @"PUT";
+        [self.requestSerializer preSignedRequestWithRequest:request expiration:[NSDate date] error:nil];
+    }).to.raiseAny();
+}
+
+- (void)testErrorReturnedFromPreSignedRequestWithRequestIfSecretMissing {
+    NSError *error;
+    NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:@"http://s3-eu-west-1.amazonaws.com/example/example"]];
+    request.HTTPMethod = @"GET";
+    
+    [self.requestSerializer preSignedRequestWithRequest:request expiration:[NSDate date] error:&error];
+    
+    XCTAssert(error != nil);
+    XCTAssert([error.domain isEqualToString:@"com.alamofire.networking.s3.error"]);
+    XCTAssert(error.code == NSURLErrorUserAuthenticationRequired);
+}
+
+- (void)testErrorReturnedAsNilFromPreSignedRequestWithRequest {
+    NSError *error;
+    NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:@"http://s3-eu-west-1.amazonaws.com/example/example"]];
+    request.HTTPMethod = @"GET";
+    [self.requestSerializer setAccessKeyID:@"access_key" secret:@"secret"];
+    
+    id partial = [OCMockObject partialMockForObject:self.requestSerializer];
+    [[partial expect] requestBySerializingRequest:[OCMArg any] withParameters:[OCMArg checkWithBlock:^(id value) {
+        BOOL validParameters = [value[@"AWSAccessKeyId"] isEqualToString:@"access_key"] && value[@"Expires"] != nil && value[@"Signature"] != nil;
+        return validParameters;
+    }] error:&error];
+    
+    [self.requestSerializer preSignedRequestWithRequest:request expiration:[NSDate date] error:&error];
+    
+    XCTAssert(error == nil);
 }
 
 @end

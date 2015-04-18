@@ -1,3 +1,3 @@
 coverage_service: coveralls
 xcodeproj: Example/AFAmazonS3Manager.xcodeproj
-source_directory: Pods/Classes
+source_directory: Pod/Classes
