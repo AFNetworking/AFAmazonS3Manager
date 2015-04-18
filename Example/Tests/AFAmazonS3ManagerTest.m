@@ -88,22 +88,66 @@
 
 - (void)testGetServiceSuccess {
     
+    __block BOOL successCallbackInvoked = FALSE;
+    
     id partialOperationQueue = [OCMockObject partialMockForObject:self.manager.operationQueue];
     id partialManager = [OCMockObject partialMockForObject:self.manager];
     
     [[[partialOperationQueue expect] andForwardToRealObject] addOperation:[OCMArg checkWithBlock:^BOOL(id obj) {
         return [obj isKindOfClass:[AFHTTPRequestOperation class]];
     }]];
-    [[[partialManager expect] andForwardToRealObject] HTTPRequestOperationWithRequest:OCMOCK_ANY success:OCMOCK_ANY failure:OCMOCK_ANY];
     
-    [self.manager getServiceWithSuccess:^(id responseObject) {
+    [[[[partialManager expect] andForwardToRealObject] andDo:^(NSInvocation *invocation) {
+        void (^successBlock)(AFHTTPRequestOperation *operation, id responseObject) = nil;
+        [invocation getArgument:&successBlock atIndex:3];
+        successCallbackInvoked = TRUE;
+        successBlock(nil, nil);
+    }] HTTPRequestOperationWithRequest:OCMOCK_ANY success:OCMOCK_ANY failure:OCMOCK_ANY];
+    
+    NSOperation *operation = [self.manager getServiceWithSuccess:^(id responseObject) {
         
     } failure:^(NSError *error) {
-
+        
     }];
+    
+    [operation start];
 
     OCMVerifyAll(partialOperationQueue);
     OCMVerifyAll(partialManager);
+    
+    expect(successCallbackInvoked).will.beTruthy();
+}
+
+- (void)testGetServiceFailure {
+    
+    __block BOOL failureCallbackInvoked = FALSE;
+    
+    id partialOperationQueue = [OCMockObject partialMockForObject:self.manager.operationQueue];
+    id partialManager = [OCMockObject partialMockForObject:self.manager];
+    
+    [[[partialOperationQueue expect] andForwardToRealObject] addOperation:[OCMArg checkWithBlock:^BOOL(id obj) {
+        return [obj isKindOfClass:[AFHTTPRequestOperation class]];
+    }]];
+    
+    [[[[partialManager expect] andForwardToRealObject] andDo:^(NSInvocation *invocation) {
+        void (^failureBlock)(AFHTTPRequestOperation *operation, NSError *error) = nil;
+        [invocation getArgument:&failureBlock atIndex:4];
+        failureCallbackInvoked = TRUE;
+        failureBlock(nil, [[NSError alloc] initWithDomain:@"Domain" code:123 userInfo:@{}]);
+    }] HTTPRequestOperationWithRequest:OCMOCK_ANY success:OCMOCK_ANY failure:OCMOCK_ANY];
+    
+    NSOperation *operation = [self.manager getServiceWithSuccess:^(id responseObject) {
+        
+    } failure:^(NSError *error) {
+        
+    }];
+    
+    [operation start];
+    
+    OCMVerifyAll(partialOperationQueue);
+    OCMVerifyAll(partialManager);
+    
+    expect(failureCallbackInvoked).will.beTruthy();
 }
 
 @end
