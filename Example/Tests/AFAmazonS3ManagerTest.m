@@ -150,4 +150,76 @@
     expect(failureCallbackInvoked).will.beTruthy();
 }
 
+- (void)testGetBucketAssertionFailure {
+    expect(^{
+        [self.manager getBucket:nil success:^(id responseObject) {
+            
+        } failure:^(NSError *error) {
+            
+        }];
+    }).to.raiseAny();
+}
+
+- (void)testGetBucketEnqueued {
+    NSString *bucket = @"bucket";
+    id partialManager = [OCMockObject partialMockForObject:self.manager];
+    [[[partialManager expect] andForwardToRealObject] enqueueS3RequestOperationWithMethod:@"GET" path:bucket parameters:nil success:OCMOCK_ANY failure:OCMOCK_ANY];
+    
+    [self.manager getBucket:bucket success:^(id responseObject) {
+        
+    } failure:^(NSError *error) {
+        
+    }];
+    
+    OCMVerifyAll(partialManager);
+}
+
+- (void)testPutBucketAssertionFailure {
+    expect(^{
+        [self.manager putBucket:nil parameters:nil success:^(id responseObject) {
+            
+        } failure:^(NSError *error) {
+            
+        }];
+    }).to.raiseAny();
+}
+
+- (void)testPutBucketEnqueued {
+    NSString *bucket = @"bucket";
+    id partialManager = [OCMockObject partialMockForObject:self.manager];
+    [[[partialManager expect] andForwardToRealObject] enqueueS3RequestOperationWithMethod:@"PUT" path:bucket parameters:nil success:OCMOCK_ANY failure:OCMOCK_ANY];
+    
+    [self.manager putBucket:bucket parameters:nil success:^(id responseObject) {
+        
+    } failure:^(NSError *error) {
+        
+    }];
+    
+    OCMVerifyAll(partialManager);
+}
+
+- (void)testDeleteBucketAssertionFailure {
+    expect(^{
+        [self.manager deleteBucket:nil success:^(id responseObject) {
+            
+        } failure:^(NSError *error) {
+            
+        }];
+    }).to.raiseAny();
+}
+
+- (void)testDeleteBucketEnqueued {
+    NSString *bucket = @"bucket";
+    id partialManager = [OCMockObject partialMockForObject:self.manager];
+    [[[partialManager expect] andForwardToRealObject] enqueueS3RequestOperationWithMethod:@"DELETE" path:bucket parameters:nil success:OCMOCK_ANY failure:OCMOCK_ANY];
+    
+    [self.manager deleteBucket:bucket success:^(id responseObject) {
+        
+    } failure:^(NSError *error) {
+        
+    }];
+    
+    OCMVerifyAll(partialManager);
+}
+
 @end
