@@ -22,6 +22,8 @@
 
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
+#import <Expecta/Expecta.h>
+
 #import "AFAmazonS3RequestSerializer.h"
 
 @interface AFAmazonS3RequestSerializerTest : XCTestCase
@@ -55,6 +57,35 @@
     XCTAssert(error != nil);
     XCTAssert([error.domain isEqualToString:@"com.alamofire.networking.s3.error"]);
     XCTAssert(error.code == NSURLErrorUserAuthenticationRequired);
+}
+
+- (void)testEnsureAccessKeyThrowsExceptionIfNil {
+    expect(^{
+        [self.requestSerializer setAccessKeyID:nil secret:@"secret"];
+    }).to.raiseAny();
+}
+
+- (void)testEnsureSecretThrowsExceptionIfNil {
+    expect(^{
+        [self.requestSerializer setAccessKeyID:@"access_key" secret:nil];
+    }).to.raiseAny();
+}
+
+- (void)testEnsureRegionThrowsExceptionIfNil {
+    expect(^{
+        [self.requestSerializer setRegion:nil];
+    }).to.raiseAny();
+}
+
+- (void)testHTTPEndpointCreation {
+    NSURL *url = [self.requestSerializer endpointURL];
+    XCTAssert([url.absoluteString isEqualToString:@"https://s3.amazonaws.com"]);
+}
+
+- (void)testHTTPSEndpointCreation {
+    self.requestSerializer.useSSL = NO;
+    NSURL *url = [self.requestSerializer endpointURL];
+    XCTAssert([url.absoluteString isEqualToString:@"http://s3.amazonaws.com"]);
 }
 
 @end
