@@ -1,0 +1,8 @@
+source 'https://github.com/CocoaPods/Specs.git'
+
+
+target 'AFAmazonS3Manager', :exclusive => true do
+  pod "AFAmazonS3Manager", :path => "../"
+
+  
+end

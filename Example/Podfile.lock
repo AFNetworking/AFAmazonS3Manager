@@ -1,0 +1,23 @@
+PODS:
+  - AFAmazonS3Manager (3.2.1):
+    - AFNetworking/NSURLConnection (~> 2.4)
+  - AFNetworking/NSURLConnection (2.5.2):
+    - AFNetworking/Reachability
+    - AFNetworking/Security
+    - AFNetworking/Serialization
+  - AFNetworking/Reachability (2.5.2)
+  - AFNetworking/Security (2.5.2)
+  - AFNetworking/Serialization (2.5.2)
+
+DEPENDENCIES:
+  - AFAmazonS3Manager (from `../`)
+
+EXTERNAL SOURCES:
+  AFAmazonS3Manager:
+    :path: ../
+
+SPEC CHECKSUMS:
+  AFAmazonS3Manager: a10e5b4ff13a1552cbf28dc29ad22938f3716155
+  AFNetworking: fefbce9660acb17f48ae0011292d4da0f457bf36
+
+COCOAPODS: 0.36.4
