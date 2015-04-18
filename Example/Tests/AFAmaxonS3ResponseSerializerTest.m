@@ -32,6 +32,14 @@
 
 @end
 
+@interface AFAmazonS3ResponseSerializer ()
+
+- (id)responseObjectForResponse:(NSURLResponse *)response
+                           data:(NSData *)data
+                          error:(NSError * __autoreleasing *)error;
+
+@end
+
 @implementation AFAmaxonS3ResponseSerializerTest
 
 - (void)setUp {
@@ -49,6 +57,28 @@
 
 - (void)testInitialization {
     XCTAssert(self.responseObject != nil);
+}
+
+- (void)testValidationOfResponseObjectsSucceeds {
+    NSError *error;
+    NSURL *url = [NSURL URLWithString:@"http://s3-eu-west-1.amazonaws.com/example/example"];
+    NSHTTPURLResponse *urlResponse = [[NSHTTPURLResponse alloc] initWithURL:url statusCode:200 HTTPVersion:@"1.1" headerFields:@{@"Etag": @"123\"456789"}];
+    AFAmazonS3ResponseSerializer *serializer = [[AFAmazonS3ResponseSerializer alloc] init];
+    AFAmazonS3ResponseObject *responseObject = [serializer responseObjectForResponse:urlResponse data:nil error:&error];
+    
+    XCTAssert(responseObject != nil);
+    XCTAssert(error == nil);
+}
+
+- (void)testValidationOfResponseObjectsFails {
+    NSError *error;
+    NSURL *url = [NSURL URLWithString:@"http://s3-eu-west-1.amazonaws.com/example/example"];
+    NSHTTPURLResponse *urlResponse = [[NSHTTPURLResponse alloc] initWithURL:url statusCode:500 HTTPVersion:@"1.1" headerFields:@{@"Etag": @"123\"456789"}];
+    AFAmazonS3ResponseSerializer *serializer = [[AFAmazonS3ResponseSerializer alloc] init];
+    AFAmazonS3ResponseObject *responseObject = [serializer responseObjectForResponse:urlResponse data:nil error:&error];
+    
+    XCTAssert(responseObject == nil);
+    XCTAssert(error != nil);
 }
 
 - (void)testURL {
