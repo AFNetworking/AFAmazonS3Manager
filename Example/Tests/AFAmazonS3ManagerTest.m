@@ -39,6 +39,10 @@
 @property (readwrite, nonatomic, copy) NSString *accessKey;
 @property (readwrite, nonatomic, copy) NSString *secret;
 
+@end
+
+@interface AFAmazonS3Manager ()
+
 - (AFHTTPRequestOperation *)setObjectWithMethod:(NSString *)method
                                            file:(NSString *)filePath
                                 destinationPath:(NSString *)destinationPath
@@ -46,6 +50,13 @@
                                        progress:(void (^)(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite))progress
                                         success:(void (^)(id responseObject))success
                                         failure:(void (^)(NSError *error))failure;
+
+@end
+
+@interface NSURLConnection ()
+
++ (NSData *)sendSynchronousRequest:(NSURLRequest *)request returningResponse:(NSURLResponse **)response error:(NSError **)error;
+
 @end
 
 @implementation AFAmazonS3ManagerTest
@@ -323,6 +334,65 @@
     
     [[[partialSerializer expect] andForwardToRealObject] requestWithMethod:@"GET" URLString:OCMOCK_ANY parameters:nil error:nil];
     
+    NSOperation *operation = [self.manager getObjectWithPath:path progress:^(NSUInteger bytesRead, long long totalBytesRead, long long totalBytesExpectedToRead) {
+        
+    } success:^(id responseObject, NSData *responseData) {
+        successCallbackInvoked = YES;
+    } failure:^(NSError *error) {
+        
+    }];
+    
+    [operation start];
+    
+    OCMVerifyAll(partialManager);
+    OCMVerifyAll(partialSerializer);
+    expect(successCallbackInvoked).will.beTruthy();
+}
+
+- (void)testGetObjectWithPathFailure {
+    __block BOOL failureCallbackInvoked = FALSE;
+    NSString *path = @"bucket/path";
+    id partialManager = [OCMockObject partialMockForObject:self.manager];
+    id partialSerializer = [OCMockObject partialMockForObject:self.manager.requestSerializer];
+    
+    [[[[partialManager expect] andForwardToRealObject] andDo:^(NSInvocation *invocation) {
+        void (^failureBlock)(AFHTTPRequestOperation *operation, NSError *error) = nil;
+        [invocation getArgument:&failureBlock atIndex:4];
+        failureBlock(nil, [[NSError alloc] initWithDomain:@"Domain" code:123 userInfo:@{}]);
+    }] HTTPRequestOperationWithRequest:OCMOCK_ANY success:OCMOCK_ANY failure:OCMOCK_ANY];
+    
+    [[[partialSerializer expect] andForwardToRealObject] requestWithMethod:@"GET" URLString:OCMOCK_ANY parameters:nil error:nil];
+    
+    NSOperation *operation = [self.manager getObjectWithPath:path progress:^(NSUInteger bytesRead, long long totalBytesRead, long long totalBytesExpectedToRead) {
+        
+    } success:^(id responseObject, NSData *responseData) {
+       
+    } failure:^(NSError *error) {
+        failureCallbackInvoked = YES;
+    }];
+    
+    [operation start];
+    
+    OCMVerifyAll(partialManager);
+    OCMVerifyAll(partialSerializer);
+    expect(failureCallbackInvoked).will.beTruthy();
+}
+
+- (void)testGetObjectWithPathAndOutputStreamSuccess {
+    __block BOOL successCallbackInvoked = FALSE;
+    NSString *path = @"bucket/path";
+    
+    id partialManager = [OCMockObject partialMockForObject:self.manager];
+    id partialSerializer = [OCMockObject partialMockForObject:self.manager.requestSerializer];
+    
+    [[[[partialManager expect] andForwardToRealObject] andDo:^(NSInvocation *invocation) {
+        void (^successBlock)(AFHTTPRequestOperation *operation, id responseObject) = nil;
+        [invocation getArgument:&successBlock atIndex:3];
+        successBlock(nil, nil);
+    }] HTTPRequestOperationWithRequest:OCMOCK_ANY success:OCMOCK_ANY failure:OCMOCK_ANY];
+    
+    [[[partialSerializer expect] andForwardToRealObject] requestWithMethod:@"GET" URLString:OCMOCK_ANY parameters:nil error:nil];
+    
     NSOperation *operation = [self.manager getObjectWithPath:path outputStream:nil progress:^(NSUInteger bytesRead, long long totalBytesRead, long long totalBytesExpectedToRead) {
     } success:^(id responseObject) {
         successCallbackInvoked = YES;
@@ -336,7 +406,7 @@
     expect(successCallbackInvoked).will.beTruthy();
 }
 
-- (void)testGetObjectWithPathFailure {
+- (void)testGetObjectWithPathAndOutputStreamFailure {
     __block BOOL failureCallbackInvoked = FALSE;
     NSString *path = @"bucket/path";
     id partialManager = [OCMockObject partialMockForObject:self.manager];
@@ -396,6 +466,60 @@
     }];
     
     OCMVerifyAll(partialManager);
+}
+
+- (void)testSetObjectWithMethodMissingMethod {
+    expect(^{
+        [self.manager setObjectWithMethod:nil file:@"file" destinationPath:@"desitinationPath" parameters:nil progress:^(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite) {
+        } success:^(id responseObject) {
+            
+        } failure:^(NSError *error) {
+            
+        }];
+    }).to.raiseAny();
+}
+
+- (void)testSetObjectWithMethodMissingFile {
+    expect(^{
+        [self.manager setObjectWithMethod:@"GET" file:nil destinationPath:@"desitinationPath" parameters:nil progress:^(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite) {
+        } success:^(id responseObject) {
+            
+        } failure:^(NSError *error) {
+            
+        }];
+    }).to.raiseAny();
+}
+
+- (void)testSetObjectWithMethodMissingDestination {
+    expect(^{
+        [self.manager setObjectWithMethod:@"GET" file:@"file" destinationPath:nil parameters:nil progress:^(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite) {
+        } success:^(id responseObject) {
+            
+        } failure:^(NSError *error) {
+            
+        }];
+    }).to.raiseAny();
+}
+
+- (void)testSetObjectWithMethodFailureDueToNilData {
+    __block BOOL failureCallbackInvoked = FALSE;
+    NSString *file = @"file";
+    NSString *method = @"POST";
+    NSString *destinationPath = @"destinationPath";
+  
+    id urlConnectionMock = OCMClassMock([NSURLConnection class]);
+    
+    [[urlConnectionMock expect] sendSynchronousRequest:OCMOCK_ANY returningResponse:[OCMArg anyObjectRef] error:[OCMArg anyObjectRef]];
+    
+    [self.manager setObjectWithMethod:method file:file destinationPath:destinationPath parameters:nil progress:^(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite) {
+    } success:^(id responseObject) {
+
+    } failure:^(NSError *error) {
+        failureCallbackInvoked = YES;
+    }];
+    
+    OCMVerifyAll(urlConnectionMock);
+    expect(failureCallbackInvoked).will.beTruthy();
 }
 
 @end
