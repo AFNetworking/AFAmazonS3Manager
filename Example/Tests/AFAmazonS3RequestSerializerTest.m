@@ -21,6 +21,7 @@
 // THE SOFTWARE.
 
 #import <UIKit/UIKit.h>
+
 #import <XCTest/XCTest.h>
 #import <Expecta/Expecta.h>
 
@@ -86,6 +87,18 @@
     self.requestSerializer.useSSL = NO;
     NSURL *url = [self.requestSerializer endpointURL];
     XCTAssert([url.absoluteString isEqualToString:@"http://s3.amazonaws.com"]);
+}
+
+- (void)testHeadersAreSetInReturnedRequest {
+    NSURLRequest *request = [[NSURLRequest alloc] initWithURL:[NSURL URLWithString:@"http://s3-eu-west-1.amazonaws.com/example/example"]];
+    NSError *error;
+    [self.requestSerializer setAccessKeyID:@"access_key" secret:@"secret"];
+    NSURLRequest *returnedRequest = [self.requestSerializer requestBySettingAuthorizationHeadersForRequest:request error:&error];
+    
+    XCTAssert(error == nil);
+    XCTAssert(returnedRequest.allHTTPHeaderFields != nil);
+    XCTAssert(returnedRequest.allHTTPHeaderFields[@"Authorization"] != nil);
+    XCTAssert(returnedRequest.allHTTPHeaderFields[@"Date"] != nil);
 }
 
 @end
