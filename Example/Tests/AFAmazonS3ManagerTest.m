@@ -35,8 +35,17 @@
 @end
 
 @interface AFAmazonS3RequestSerializer ()
+
 @property (readwrite, nonatomic, copy) NSString *accessKey;
 @property (readwrite, nonatomic, copy) NSString *secret;
+
+- (AFHTTPRequestOperation *)setObjectWithMethod:(NSString *)method
+                                           file:(NSString *)filePath
+                                destinationPath:(NSString *)destinationPath
+                                     parameters:(NSDictionary *)parameters
+                                       progress:(void (^)(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite))progress
+                                        success:(void (^)(id responseObject))success
+                                        failure:(void (^)(NSError *error))failure;
 @end
 
 @implementation AFAmazonS3ManagerTest
@@ -100,12 +109,11 @@
     [[[[partialManager expect] andForwardToRealObject] andDo:^(NSInvocation *invocation) {
         void (^successBlock)(AFHTTPRequestOperation *operation, id responseObject) = nil;
         [invocation getArgument:&successBlock atIndex:3];
-        successCallbackInvoked = TRUE;
         successBlock(nil, nil);
     }] HTTPRequestOperationWithRequest:OCMOCK_ANY success:OCMOCK_ANY failure:OCMOCK_ANY];
     
     NSOperation *operation = [self.manager getServiceWithSuccess:^(id responseObject) {
-        
+        successCallbackInvoked = TRUE;
     } failure:^(NSError *error) {
         
     }];
@@ -132,14 +140,13 @@
     [[[[partialManager expect] andForwardToRealObject] andDo:^(NSInvocation *invocation) {
         void (^failureBlock)(AFHTTPRequestOperation *operation, NSError *error) = nil;
         [invocation getArgument:&failureBlock atIndex:4];
-        failureCallbackInvoked = TRUE;
         failureBlock(nil, [[NSError alloc] initWithDomain:@"Domain" code:123 userInfo:@{}]);
     }] HTTPRequestOperationWithRequest:OCMOCK_ANY success:OCMOCK_ANY failure:OCMOCK_ANY];
     
     NSOperation *operation = [self.manager getServiceWithSuccess:^(id responseObject) {
         
     } failure:^(NSError *error) {
-        
+        failureCallbackInvoked = TRUE;
     }];
     
     [operation start];
@@ -165,11 +172,13 @@
     id partialManager = [OCMockObject partialMockForObject:self.manager];
     [[[partialManager expect] andForwardToRealObject] enqueueS3RequestOperationWithMethod:@"GET" path:bucket parameters:nil success:OCMOCK_ANY failure:OCMOCK_ANY];
     
-    [self.manager getBucket:bucket success:^(id responseObject) {
+    NSOperation *operation = [self.manager getBucket:bucket success:^(id responseObject) {
         
     } failure:^(NSError *error) {
         
     }];
+    
+    [operation start];
     
     OCMVerifyAll(partialManager);
 }
@@ -189,11 +198,13 @@
     id partialManager = [OCMockObject partialMockForObject:self.manager];
     [[[partialManager expect] andForwardToRealObject] enqueueS3RequestOperationWithMethod:@"PUT" path:bucket parameters:nil success:OCMOCK_ANY failure:OCMOCK_ANY];
     
-    [self.manager putBucket:bucket parameters:nil success:^(id responseObject) {
+    NSOperation *operation = [self.manager putBucket:bucket parameters:nil success:^(id responseObject) {
         
     } failure:^(NSError *error) {
         
     }];
+    
+    [operation start];
     
     OCMVerifyAll(partialManager);
 }
@@ -213,7 +224,172 @@
     id partialManager = [OCMockObject partialMockForObject:self.manager];
     [[[partialManager expect] andForwardToRealObject] enqueueS3RequestOperationWithMethod:@"DELETE" path:bucket parameters:nil success:OCMOCK_ANY failure:OCMOCK_ANY];
     
-    [self.manager deleteBucket:bucket success:^(id responseObject) {
+    NSOperation *operation = [self.manager deleteBucket:bucket success:^(id responseObject) {
+        
+    } failure:^(NSError *error) {
+        
+    }];
+    
+    [operation start];
+    
+    OCMVerifyAll(partialManager);
+}
+
+- (void)testHeadObjectAssertionFailure {
+    expect(^{
+        [self.manager headObjectWithPath:nil success:^(NSHTTPURLResponse *response) {
+        
+        } failure:^(NSError *error) {
+            
+        }];
+    }).to.raiseAny();
+}
+
+- (void)testHeadObjectSuccess {
+    __block BOOL successCallbackInvoked = FALSE;
+    NSString *path = @"bucket/path";
+    id partialManager = [OCMockObject partialMockForObject:self.manager];
+    id partialSerializer = [OCMockObject partialMockForObject:self.manager.requestSerializer];
+    
+    [[[[partialManager expect] andForwardToRealObject] andDo:^(NSInvocation *invocation) {
+        void (^successBlock)(AFHTTPRequestOperation *operation, id responseObject) = nil;
+        [invocation getArgument:&successBlock atIndex:3];
+        successBlock(nil, nil);
+    }] HTTPRequestOperationWithRequest:OCMOCK_ANY success:OCMOCK_ANY failure:OCMOCK_ANY];
+    
+    [[[partialSerializer expect] andForwardToRealObject] requestWithMethod:@"HEAD" URLString:OCMOCK_ANY parameters:nil error:nil];
+    
+    NSOperation *operation = [self.manager headObjectWithPath:path success:^(NSHTTPURLResponse *response) {
+        successCallbackInvoked = TRUE;
+    } failure:^(NSError *error) {
+        
+    }];
+    
+    [operation start];
+
+    OCMVerifyAll(partialManager);
+    OCMVerifyAll(partialSerializer);
+    expect(successCallbackInvoked).will.beTruthy();
+}
+
+- (void)testHeadObjectFailure {
+    __block BOOL failureCallbackInvoked = FALSE;
+    NSString *path = @"bucket/path";
+    id partialManager = [OCMockObject partialMockForObject:self.manager];
+    id partialSerializer = [OCMockObject partialMockForObject:self.manager.requestSerializer];
+    
+    [[[[partialManager expect] andForwardToRealObject] andDo:^(NSInvocation *invocation) {
+        void (^failureBlock)(AFHTTPRequestOperation *operation, NSError *error) = nil;
+        [invocation getArgument:&failureBlock atIndex:4];
+        failureBlock(nil, [[NSError alloc] initWithDomain:@"Domain" code:123 userInfo:@{}]);
+    }] HTTPRequestOperationWithRequest:OCMOCK_ANY success:OCMOCK_ANY failure:OCMOCK_ANY];
+    
+    [[[partialSerializer expect] andForwardToRealObject] requestWithMethod:@"HEAD" URLString:OCMOCK_ANY parameters:nil error:nil];
+    
+    NSOperation *operation = [self.manager headObjectWithPath:path success:^(NSHTTPURLResponse *response) {
+        
+    } failure:^(NSError *error) {
+        failureCallbackInvoked = TRUE;
+    }];
+    
+    [operation start];
+    
+    OCMVerifyAll(partialManager);
+    OCMVerifyAll(partialSerializer);
+    expect(failureCallbackInvoked).will.beTruthy();
+}
+
+- (void)testGetObjectWithPathAssertionFailure {
+    expect(^{
+        [self.manager getObjectWithPath:nil outputStream:nil progress:^(NSUInteger bytesRead, long long totalBytesRead, long long totalBytesExpectedToRead) {
+        } success:^(id responseObject) {
+        } failure:^(NSError *error) {
+        }];
+    }).to.raiseAny();
+}
+
+- (void)testGetObjectWithPathSuccess {
+    __block BOOL successCallbackInvoked = FALSE;
+    NSString *path = @"bucket/path";
+    
+    id partialManager = [OCMockObject partialMockForObject:self.manager];
+    id partialSerializer = [OCMockObject partialMockForObject:self.manager.requestSerializer];
+    
+    [[[[partialManager expect] andForwardToRealObject] andDo:^(NSInvocation *invocation) {
+        void (^successBlock)(AFHTTPRequestOperation *operation, id responseObject) = nil;
+        [invocation getArgument:&successBlock atIndex:3];
+        successBlock(nil, nil);
+    }] HTTPRequestOperationWithRequest:OCMOCK_ANY success:OCMOCK_ANY failure:OCMOCK_ANY];
+    
+    [[[partialSerializer expect] andForwardToRealObject] requestWithMethod:@"GET" URLString:OCMOCK_ANY parameters:nil error:nil];
+    
+    NSOperation *operation = [self.manager getObjectWithPath:path outputStream:nil progress:^(NSUInteger bytesRead, long long totalBytesRead, long long totalBytesExpectedToRead) {
+    } success:^(id responseObject) {
+        successCallbackInvoked = YES;
+    } failure:^(NSError *error) {
+    }];
+    
+    [operation start];
+    
+    OCMVerifyAll(partialManager);
+    OCMVerifyAll(partialSerializer);
+    expect(successCallbackInvoked).will.beTruthy();
+}
+
+- (void)testGetObjectWithPathFailure {
+    __block BOOL failureCallbackInvoked = FALSE;
+    NSString *path = @"bucket/path";
+    id partialManager = [OCMockObject partialMockForObject:self.manager];
+    id partialSerializer = [OCMockObject partialMockForObject:self.manager.requestSerializer];
+    
+    [[[[partialManager expect] andForwardToRealObject] andDo:^(NSInvocation *invocation) {
+        void (^failureBlock)(AFHTTPRequestOperation *operation, NSError *error) = nil;
+        [invocation getArgument:&failureBlock atIndex:4];
+        failureBlock(nil, [[NSError alloc] initWithDomain:@"Domain" code:123 userInfo:@{}]);
+    }] HTTPRequestOperationWithRequest:OCMOCK_ANY success:OCMOCK_ANY failure:OCMOCK_ANY];
+    
+    [[[partialSerializer expect] andForwardToRealObject] requestWithMethod:@"GET" URLString:OCMOCK_ANY parameters:nil error:nil];
+    
+    NSOperation *operation = [self.manager getObjectWithPath:path outputStream:nil progress:^(NSUInteger bytesRead, long long totalBytesRead, long long totalBytesExpectedToRead) {
+    } success:^(id responseObject) {
+        
+    } failure:^(NSError *error) {
+        failureCallbackInvoked = YES;
+    }];
+    
+    [operation start];
+    
+    OCMVerifyAll(partialManager);
+    OCMVerifyAll(partialSerializer);
+    expect(failureCallbackInvoked).will.beTruthy();
+}
+
+- (void)testPostObjectWithFile {
+    NSString *path = @"path";
+    id partialManager = [OCMockObject partialMockForObject:self.manager];
+    
+    [[partialManager expect] setObjectWithMethod:@"POST" file:OCMOCK_ANY destinationPath:OCMOCK_ANY parameters:OCMOCK_ANY progress:OCMOCK_ANY success:OCMOCK_ANY failure:OCMOCK_ANY];
+    
+    [self.manager postObjectWithFile:path destinationPath:path parameters:@{} progress:^(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite) {
+        
+    } success:^(id responseObject) {
+        
+    } failure:^(NSError *error) {
+        
+    }];
+    
+    OCMVerifyAll(partialManager);
+}
+
+- (void)testPutObjectWithFile {
+    NSString *path = @"path";
+    id partialManager = [OCMockObject partialMockForObject:self.manager];
+    
+    [[partialManager expect] setObjectWithMethod:@"PUT" file:OCMOCK_ANY destinationPath:OCMOCK_ANY parameters:OCMOCK_ANY progress:OCMOCK_ANY success:OCMOCK_ANY failure:OCMOCK_ANY];
+    
+    [self.manager putObjectWithFile:path destinationPath:path parameters:@{} progress:^(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite) {
+        
+    } success:^(id responseObject) {
         
     } failure:^(NSError *error) {
         
