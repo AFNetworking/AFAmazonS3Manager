@@ -3,6 +3,10 @@ before_install:
   - brew update
   - brew upgrade xctool
   - gem install cocoapods
-install: bundle install --without=documentation --path ../travis_bundle_dir
+install:
+  - bundle install --without=documentation --path ../travis_bundle_dir
+  - cd Example
+  - bundle exec pod install
+  - cd ../
 script: xctool -workspace Example/AFAmazonS3Manager.xcworkspace -scheme AFAmazonS3Manager-Example -configuration Debug -sdk iphonesimulator test
 after_success: bundle exec slather
