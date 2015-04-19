@@ -90,6 +90,12 @@
     XCTAssert([url.absoluteString isEqualToString:@"http://s3.amazonaws.com"]);
 }
 
+- (void)testBucketBasedEndpointCreation {
+    self.requestSerializer.bucket = @"bucket";
+    NSURL *url = [self.requestSerializer endpointURL];
+    XCTAssert([url.absoluteString isEqualToString:@"https://bucket.s3.amazonaws.com"]);
+}
+
 - (void)testHeadersAreSetInReturnedRequest {
     NSURLRequest *request = [[NSURLRequest alloc] initWithURL:[NSURL URLWithString:@"http://s3-eu-west-1.amazonaws.com/example/example"]];
     NSError *error;

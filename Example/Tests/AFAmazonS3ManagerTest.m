@@ -660,4 +660,15 @@
     XCTAssert([set containsObject:@"requestSerializer.useSSL"]);
 }
 
+- (void)testCopy {
+
+    NSZone *zone = NSDefaultMallocZone();
+    
+    AFAmazonS3Manager *manager = [self.manager copyWithZone:zone];
+    
+    XCTAssert(manager != nil);
+    XCTAssert(manager.requestSerializer != nil);
+    XCTAssert(manager.responseSerializer != nil);
+}
+
 @end
