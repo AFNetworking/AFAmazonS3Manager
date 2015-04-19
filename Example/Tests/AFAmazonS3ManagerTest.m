@@ -503,6 +503,79 @@
     }).to.raiseAny();
 }
 
+- (void)testSetObjectFailureDueToNilData {
+    
+    id urlConnectionMock = OCMClassMock([NSURLConnection class]);
+    [[urlConnectionMock expect] sendSynchronousRequest:OCMOCK_ANY returningResponse:[OCMArg anyObjectRef] error:[OCMArg anyObjectRef]];
+
+    [self.manager setObjectWithMethod:@"GET" file:@"file" destinationPath:@"destination" parameters:nil progress:^(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite) {
+    } success:^(id responseObject) {
+        
+    } failure:^(NSError *error) {
+        
+    }];
+    
+    OCMVerifyAll(urlConnectionMock);
+}
+
+- (void)testSetObjectSuccess {
+    
+    __block BOOL successCallbackInvoked = FALSE;
+    NSData *data = [@"[]" dataUsingEncoding:NSUTF8StringEncoding];
+    
+    NSURL *url = [NSURL URLWithString:@"http://s3-eu-west-1.amazonaws.com/example/example"];
+    NSURLResponse *response = [[NSURLResponse alloc] initWithURL:url MIMEType:@"" expectedContentLength:2 textEncodingName:@"text/html"];
+    
+    id urlConnectionMock = OCMClassMock([NSURLConnection class]);
+    [[[urlConnectionMock expect] andReturn:data] sendSynchronousRequest:OCMOCK_ANY returningResponse:[OCMArg setTo:response] error:[OCMArg anyObjectRef]];
+
+    id partialManager = [OCMockObject partialMockForObject:self.manager];
+    [[[[partialManager expect] andForwardToRealObject] andDo:^(NSInvocation *invocation) {
+        void (^successBlock)(AFHTTPRequestOperation *operation, id responseObject) = nil;
+        [invocation getArgument:&successBlock atIndex:3];
+        successBlock(nil, nil);
+    }] HTTPRequestOperationWithRequest:OCMOCK_ANY success:OCMOCK_ANY failure:OCMOCK_ANY];
+    
+    [self.manager setObjectWithMethod:@"GET" file:@"file" destinationPath:@"destination" parameters:nil progress:^(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite) {
+    } success:^(id responseObject) {
+        successCallbackInvoked = TRUE;
+    } failure:^(NSError *error) {
+        
+    }];
+    
+    expect(successCallbackInvoked).will.beTruthy();
+    OCMVerifyAll(urlConnectionMock);
+}
+
+- (void)testSetObjectFailure {
+    
+    __block BOOL failureCallbackInvoked = FALSE;
+    NSData *data = [@"[]" dataUsingEncoding:NSUTF8StringEncoding];
+    
+    NSURL *url = [NSURL URLWithString:@"http://s3-eu-west-1.amazonaws.com/example/example"];
+    NSURLResponse *response = [[NSURLResponse alloc] initWithURL:url MIMEType:@"" expectedContentLength:2 textEncodingName:@"text/html"];
+    
+    id urlConnectionMock = OCMClassMock([NSURLConnection class]);
+    [[[urlConnectionMock expect] andReturn:data] sendSynchronousRequest:OCMOCK_ANY returningResponse:[OCMArg setTo:response] error:[OCMArg anyObjectRef]];
+    
+    id partialManager = [OCMockObject partialMockForObject:self.manager];
+    [[[[partialManager expect] andForwardToRealObject] andDo:^(NSInvocation *invocation) {
+        void (^failureBlock)(AFHTTPRequestOperation *operation, NSError *error) = nil;
+        [invocation getArgument:&failureBlock atIndex:4];
+        failureBlock(nil, [[NSError alloc] initWithDomain:@"Domain" code:123 userInfo:@{}]);
+    }] HTTPRequestOperationWithRequest:OCMOCK_ANY success:OCMOCK_ANY failure:OCMOCK_ANY];
+    
+    [self.manager setObjectWithMethod:@"GET" file:@"file" destinationPath:@"destination" parameters:nil progress:^(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite) {
+    } success:^(id responseObject) {
+        
+    } failure:^(NSError *error) {
+        failureCallbackInvoked = TRUE;
+    }];
+    
+    expect(failureCallbackInvoked).will.beTruthy();
+    OCMVerifyAll(urlConnectionMock);
+}
+
 - (void)testDeleteObjectShouldThrowExceptionIfNilPath {
     expect(^{
         [self.manager deleteObjectWithPath:nil success:^(id responseObject) {
