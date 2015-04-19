@@ -518,7 +518,7 @@
     OCMVerifyAll(urlConnectionMock);
 }
 
-- (void)testSetObjectSuccess {
+- (void)testSetObjectGetMethodSuccess {
     
     __block BOOL successCallbackInvoked = FALSE;
     NSData *data = [@"[]" dataUsingEncoding:NSUTF8StringEncoding];
@@ -545,6 +545,41 @@
     
     expect(successCallbackInvoked).will.beTruthy();
     OCMVerifyAll(urlConnectionMock);
+}
+
+- (void)testSetObjectPostMethodSuccess {
+    
+    __block BOOL successCallbackInvoked = FALSE;
+    NSData *data = [@"[]" dataUsingEncoding:NSUTF8StringEncoding];
+    
+    NSURL *url = [NSURL URLWithString:@"http://s3-eu-west-1.amazonaws.com/example/example"];
+    NSURLResponse *response = [[NSURLResponse alloc] initWithURL:url MIMEType:@"" expectedContentLength:2 textEncodingName:@"text/html"];
+    
+    id urlConnectionMock = OCMClassMock([NSURLConnection class]);
+    [[[urlConnectionMock expect] andReturn:data] sendSynchronousRequest:OCMOCK_ANY returningResponse:[OCMArg setTo:response] error:[OCMArg anyObjectRef]];
+    
+    id partialManager = [OCMockObject partialMockForObject:self.manager];
+    id partialRequestSerializer = [OCMockObject partialMockForObject:self.manager.requestSerializer];
+    OCMStub([partialManager requestSerializer]).andReturn(partialRequestSerializer);
+    [partialRequestSerializer setAccessKey:@"access_key"];
+    [partialRequestSerializer setSecret:@"secret"];
+    
+    [[[[partialManager expect] andForwardToRealObject] andDo:^(NSInvocation *invocation) {
+        void (^successBlock)(AFHTTPRequestOperation *operation, id responseObject) = nil;
+        [invocation getArgument:&successBlock atIndex:3];
+        successBlock(nil, nil);
+    }] HTTPRequestOperationWithRequest:OCMOCK_ANY success:OCMOCK_ANY failure:OCMOCK_ANY];
+    
+    [partialManager setObjectWithMethod:@"POST" file:@"file" destinationPath:@"destination" parameters:@{@"one": @"two"} progress:^(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite) {
+    } success:^(id responseObject) {
+        successCallbackInvoked = TRUE;
+    } failure:^(NSError *error) {
+        
+    }];
+    
+    expect(successCallbackInvoked).will.beTruthy();
+    OCMVerifyAll(urlConnectionMock);
+    OCMVerifyAll(partialRequestSerializer);
 }
 
 - (void)testSetObjectFailure {
