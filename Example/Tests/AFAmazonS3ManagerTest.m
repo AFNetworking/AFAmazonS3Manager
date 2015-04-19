@@ -43,6 +43,8 @@
 
 @interface AFAmazonS3Manager ()
 
++ (NSSet *)keyPathsForValuesAffectingBaseURL;
+
 - (AFHTTPRequestOperation *)setObjectWithMethod:(NSString *)method
                                            file:(NSString *)filePath
                                 destinationPath:(NSString *)destinationPath
@@ -501,25 +503,53 @@
     }).to.raiseAny();
 }
 
-- (void)testSetObjectWithMethodFailureDueToNilData {
-    __block BOOL failureCallbackInvoked = FALSE;
-    NSString *file = @"file";
-    NSString *method = @"POST";
-    NSString *destinationPath = @"destinationPath";
-  
-    id urlConnectionMock = OCMClassMock([NSURLConnection class]);
-    
-    [[urlConnectionMock expect] sendSynchronousRequest:OCMOCK_ANY returningResponse:[OCMArg anyObjectRef] error:[OCMArg anyObjectRef]];
-    
-    [self.manager setObjectWithMethod:method file:file destinationPath:destinationPath parameters:nil progress:^(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite) {
-    } success:^(id responseObject) {
+- (void)testDeleteObjectShouldThrowExceptionIfNilPath {
+    expect(^{
+        [self.manager deleteObjectWithPath:nil success:^(id responseObject) {
+            
+        } failure:^(NSError *error) {
+            
+        }];
+    }).to.raiseAny();
+}
 
+- (void)testDeleteObjectWithRegularPath {
+    NSString *deleteString = @"path_to_delete";
+    
+    id partialManager = [OCMockObject partialMockForObject:self.manager];
+    [[[partialManager expect] andForwardToRealObject] enqueueS3RequestOperationWithMethod:@"DELETE" path:deleteString parameters:nil success:OCMOCK_ANY failure:OCMOCK_ANY];
+    
+    [self.manager deleteObjectWithPath:deleteString success:^(id responseObject) {
+        
     } failure:^(NSError *error) {
-        failureCallbackInvoked = YES;
+        
     }];
     
-    OCMVerifyAll(urlConnectionMock);
-    expect(failureCallbackInvoked).will.beTruthy();
+    OCMVerifyAll(partialManager);
+}
+
+- (void)testDeleteObjectWithIrregularPath {
+    NSString *deleteString = @"path to delete";
+    
+    id partialManager = [OCMockObject partialMockForObject:self.manager];
+    [[[partialManager expect] andForwardToRealObject] enqueueS3RequestOperationWithMethod:@"DELETE" path:@"path+to+delete" parameters:nil success:OCMOCK_ANY failure:OCMOCK_ANY];
+    
+    [self.manager deleteObjectWithPath:deleteString success:^(id responseObject) {
+        
+    } failure:^(NSError *error) {
+        
+    }];
+    
+    OCMVerifyAll(partialManager);
+}
+
+- (void)testKVOPathValues {
+    NSSet *set = [AFAmazonS3Manager keyPathsForValuesAffectingBaseURL];
+    
+    XCTAssert([set containsObject:@"baseURL"]);
+    XCTAssert([set containsObject:@"requestSerializer.bucket"]);
+    XCTAssert([set containsObject:@"requestSerializer.region"]);
+    XCTAssert([set containsObject:@"requestSerializer.useSSL"]);
 }
 
 @end
