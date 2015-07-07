@@ -106,12 +106,13 @@ static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
 #pragma mark Bucket Operations
 
 - (AFHTTPRequestOperation *)getBucket:(NSString *)bucket
+                           parameters:(NSDictionary *)parameters
                               success:(void (^)(id responseObject))success
                               failure:(void (^)(NSError *error))failure
 {
     NSParameterAssert(bucket);
 
-    return [self enqueueS3RequestOperationWithMethod:@"GET" path:bucket parameters:nil success:success failure:failure];
+    return [self enqueueS3RequestOperationWithMethod:@"GET" path:bucket parameters:parameters success:success failure:failure];
 }
 
 - (AFHTTPRequestOperation *)putBucket:(NSString *)bucket
