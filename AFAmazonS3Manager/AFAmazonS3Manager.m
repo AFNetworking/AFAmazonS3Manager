@@ -25,10 +25,6 @@
 
 NSString * const AFAmazonS3ManagerErrorDomain = @"com.alamofire.networking.s3.error";
 
-static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
-    return [path stringByReplacingOccurrencesOfString:@" " withString:@"+"];
-}
-
 @interface AFAmazonS3Manager ()
 @property (readwrite, nonatomic, strong) NSURL *baseURL;
 @end
@@ -142,8 +138,6 @@ static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
 {
     NSParameterAssert(path);
 
-    path = AFPathByEscapingSpacesWithPlusSigns(path);
-
     NSMutableURLRequest *request = [self.requestSerializer requestWithMethod:@"HEAD" URLString:[[self.baseURL URLByAppendingPathComponent:path] absoluteString] parameters:nil error:nil];
     AFHTTPRequestOperation *requestOperation = [self HTTPRequestOperationWithRequest:request success:^(AFHTTPRequestOperation *operation, __unused id responseObject) {
         if (success) {
@@ -166,8 +160,6 @@ static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
                                       failure:(void (^)(NSError *error))failure
 {
     NSParameterAssert(path);
-
-    path = AFPathByEscapingSpacesWithPlusSigns(path);
 
     NSMutableURLRequest *request = [self.requestSerializer requestWithMethod:@"GET" URLString:[[self.baseURL URLByAppendingPathComponent:path] absoluteString] parameters:nil error:nil];
     AFHTTPRequestOperation *requestOperation = [self HTTPRequestOperationWithRequest:request success:^(AFHTTPRequestOperation *operation, id responseObject) {
@@ -194,8 +186,6 @@ static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
                                       failure:(void (^)(NSError *error))failure
 {
     NSParameterAssert(path);
-
-    path = AFPathByEscapingSpacesWithPlusSigns(path);
 
     NSMutableURLRequest *request = [self.requestSerializer requestWithMethod:@"GET" URLString:[[self.baseURL URLByAppendingPathComponent:path] absoluteString] parameters:nil error:nil];
     AFHTTPRequestOperation *requestOperation = [self HTTPRequestOperationWithRequest:request success:^(__unused AFHTTPRequestOperation *operation, id responseObject) {
@@ -300,8 +290,6 @@ static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
         return nil;
     }
 
-    destinationPath = AFPathByEscapingSpacesWithPlusSigns(destinationPath);
-
     NSMutableURLRequest *request = nil;
     if ([method compare:@"POST" options:NSCaseInsensitiveSearch] == NSOrderedSame) {
         NSError *requestError = nil;
@@ -355,8 +343,6 @@ static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
                                          failure:(void (^)(NSError *error))failure
 {
     NSParameterAssert(path);
-
-    path = AFPathByEscapingSpacesWithPlusSigns(path);
 
     return [self enqueueS3RequestOperationWithMethod:@"DELETE" path:path parameters:nil success:success failure:failure];
 }
