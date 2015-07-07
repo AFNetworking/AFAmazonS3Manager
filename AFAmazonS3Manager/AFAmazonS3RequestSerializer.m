@@ -235,6 +235,26 @@ static NSString * AFAWSSignatureForRequest(NSURLRequest *request, NSString *buck
 
 #pragma mark - AFHTTPRequestSerializer
 
+
+// S3 expects parameters as headers for PUT requests for calculating authentication
+- (NSMutableURLRequest *)putRequestWithURLString:(NSString *)URLString
+                                parameters:(NSDictionary *)parameters
+                                     error:(NSError *__autoreleasing *)error
+{
+    NSMutableURLRequest *request = [super requestWithMethod:@"PUT" URLString:URLString parameters:nil error:error];
+
+    if (self.sessionToken) {
+        [request setValue:self.sessionToken forHTTPHeaderField:@"x-amz-security-token"];
+    }
+    if (parameters != nil) {
+        for (id key in parameters) {
+            [request setValue:[parameters objectForKey:key] forHTTPHeaderField:key];
+        }
+    }
+
+    return [[self requestBySettingAuthorizationHeadersForRequest:request error:error] mutableCopy];
+}
+
 - (NSMutableURLRequest *)requestWithMethod:(NSString *)method
                                  URLString:(NSString *)URLString
                                 parameters:(NSDictionary *)parameters

@@ -215,6 +215,15 @@
                                       success:(void (^)(id responseObject))success
                                       failure:(void (^)(NSError *error))failure;
 
+/* same as putObjectWithFile but with NSData */
+
+- (AFHTTPRequestOperation *)putObjectWithData:(NSData *)data
+                              destinationPath:(NSString *)destinationPath
+                               parameters:(NSDictionary *)parameters
+                                 progress:(void (^)(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite))progress
+                                  success:(void (^)(id responseObject))success
+                                  failure:(void (^)(NSError *error))failure;
+
 /**
  Deletes the specified object. Once deleted, there is no method to restore or undelete an object.
 

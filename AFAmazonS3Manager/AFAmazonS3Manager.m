@@ -236,6 +236,42 @@ static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
     return [self setObjectWithMethod:@"PUT" file:path destinationPath:destinationPath parameters:parameters progress:progress success:success failure:failure];
 }
 
+// there is a bug in calcalute authentication in the AFAmazonS3Manager code
+
+- (AFHTTPRequestOperation *)putObjectWithData:(NSData *)data
+                              destinationPath:(NSString *)destinationPath
+                               parameters:(NSDictionary *)parameters
+                                 progress:(void (^)(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite))progress
+                                  success:(void (^)(id responseObject))success
+                                  failure:(void (^)(NSError *error))failure
+
+{
+    NSParameterAssert(data);
+    NSParameterAssert(destinationPath);
+
+    NSMutableURLRequest *request = nil;
+    request = [self.requestSerializer putRequestWithURLString:[[self.baseURL URLByAppendingPathComponent:destinationPath] absoluteString] parameters:parameters error:nil];
+
+    request.HTTPBody = data;
+    
+
+    AFHTTPRequestOperation *requestOperation = [self HTTPRequestOperationWithRequest:request success:^(__unused AFHTTPRequestOperation *operation, id responseObject) {
+        if (success) {
+            success(responseObject);
+        }
+    } failure:^(__unused AFHTTPRequestOperation *operation, NSError *error) {
+        if (failure) {
+            failure(error);
+        }
+    }];
+
+    [requestOperation setUploadProgressBlock:progress];
+
+    [self.operationQueue addOperation:requestOperation];
+    
+    return requestOperation;
+}
+
 - (AFHTTPRequestOperation *)setObjectWithMethod:(NSString *)method
                                            file:(NSString *)filePath
                                 destinationPath:(NSString *)destinationPath
