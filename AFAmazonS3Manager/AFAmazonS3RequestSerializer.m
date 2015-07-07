@@ -108,7 +108,9 @@ static NSString * AFAWSSignatureForRequest(NSURLRequest *request, NSString *buck
         [mutableCanonicalizedAMZHeaderString appendFormat:@"%@:%@\n", field, value];
     }
 
-    NSString *canonicalizedResource = bucket ? [NSString stringWithFormat:@"/%@%@", bucket, request.URL.path] : request.URL.path;
+    // the authentication need use percent encoded path
+    NSURLComponents *urlComp = [NSURLComponents componentsWithURL:request.URL resolvingAgainstBaseURL:NO];
+    NSString *canonicalizedResource = bucket ? [NSString stringWithFormat:@"/%@%@", bucket, urlComp.percentEncodedPath] : urlComp.percentEncodedPath;
     NSString *method = [request HTTPMethod];
     NSString *contentMD5 = [request valueForHTTPHeaderField:@"Content-MD5"];
     NSString *contentType = [request valueForHTTPHeaderField:@"Content-Type"];
