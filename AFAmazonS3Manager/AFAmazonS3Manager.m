@@ -25,10 +25,6 @@
 
 NSString * const AFAmazonS3ManagerErrorDomain = @"com.alamofire.networking.s3.error";
 
-static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
-    return [path stringByReplacingOccurrencesOfString:@" " withString:@"+"];
-}
-
 @interface AFAmazonS3Manager ()
 @property (readwrite, nonatomic, strong) NSURL *baseURL;
 @end
@@ -106,12 +102,13 @@ static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
 #pragma mark Bucket Operations
 
 - (AFHTTPRequestOperation *)getBucket:(NSString *)bucket
+                           parameters:(NSDictionary *)parameters
                               success:(void (^)(id responseObject))success
                               failure:(void (^)(NSError *error))failure
 {
     NSParameterAssert(bucket);
 
-    return [self enqueueS3RequestOperationWithMethod:@"GET" path:bucket parameters:nil success:success failure:failure];
+    return [self enqueueS3RequestOperationWithMethod:@"GET" path:bucket parameters:parameters success:success failure:failure];
 }
 
 - (AFHTTPRequestOperation *)putBucket:(NSString *)bucket
@@ -141,8 +138,6 @@ static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
 {
     NSParameterAssert(path);
 
-    path = AFPathByEscapingSpacesWithPlusSigns(path);
-
     NSMutableURLRequest *request = [self.requestSerializer requestWithMethod:@"HEAD" URLString:[[self.baseURL URLByAppendingPathComponent:path] absoluteString] parameters:nil error:nil];
     AFHTTPRequestOperation *requestOperation = [self HTTPRequestOperationWithRequest:request success:^(AFHTTPRequestOperation *operation, __unused id responseObject) {
         if (success) {
@@ -165,8 +160,6 @@ static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
                                       failure:(void (^)(NSError *error))failure
 {
     NSParameterAssert(path);
-
-    path = AFPathByEscapingSpacesWithPlusSigns(path);
 
     NSMutableURLRequest *request = [self.requestSerializer requestWithMethod:@"GET" URLString:[[self.baseURL URLByAppendingPathComponent:path] absoluteString] parameters:nil error:nil];
     AFHTTPRequestOperation *requestOperation = [self HTTPRequestOperationWithRequest:request success:^(AFHTTPRequestOperation *operation, id responseObject) {
@@ -193,8 +186,6 @@ static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
                                       failure:(void (^)(NSError *error))failure
 {
     NSParameterAssert(path);
-
-    path = AFPathByEscapingSpacesWithPlusSigns(path);
 
     NSMutableURLRequest *request = [self.requestSerializer requestWithMethod:@"GET" URLString:[[self.baseURL URLByAppendingPathComponent:path] absoluteString] parameters:nil error:nil];
     AFHTTPRequestOperation *requestOperation = [self HTTPRequestOperationWithRequest:request success:^(__unused AFHTTPRequestOperation *operation, id responseObject) {
@@ -236,6 +227,42 @@ static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
     return [self setObjectWithMethod:@"PUT" file:path destinationPath:destinationPath parameters:parameters progress:progress success:success failure:failure];
 }
 
+// there is a bug in calcalute authentication in the AFAmazonS3Manager code
+
+- (AFHTTPRequestOperation *)putObjectWithData:(NSData *)data
+                              destinationPath:(NSString *)destinationPath
+                               parameters:(NSDictionary *)parameters
+                                 progress:(void (^)(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite))progress
+                                  success:(void (^)(id responseObject))success
+                                  failure:(void (^)(NSError *error))failure
+
+{
+    NSParameterAssert(data);
+    NSParameterAssert(destinationPath);
+
+    NSMutableURLRequest *request = nil;
+    request = [self.requestSerializer putRequestWithURLString:[[self.baseURL URLByAppendingPathComponent:destinationPath] absoluteString] parameters:parameters error:nil];
+
+    request.HTTPBody = data;
+    
+
+    AFHTTPRequestOperation *requestOperation = [self HTTPRequestOperationWithRequest:request success:^(__unused AFHTTPRequestOperation *operation, id responseObject) {
+        if (success) {
+            success(responseObject);
+        }
+    } failure:^(__unused AFHTTPRequestOperation *operation, NSError *error) {
+        if (failure) {
+            failure(error);
+        }
+    }];
+
+    [requestOperation setUploadProgressBlock:progress];
+
+    [self.operationQueue addOperation:requestOperation];
+    
+    return requestOperation;
+}
+
 - (AFHTTPRequestOperation *)setObjectWithMethod:(NSString *)method
                                            file:(NSString *)filePath
                                 destinationPath:(NSString *)destinationPath
@@ -262,8 +289,6 @@ static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
 
         return nil;
     }
-
-    destinationPath = AFPathByEscapingSpacesWithPlusSigns(destinationPath);
 
     NSMutableURLRequest *request = nil;
     if ([method compare:@"POST" options:NSCaseInsensitiveSearch] == NSOrderedSame) {
@@ -318,8 +343,6 @@ static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
                                          failure:(void (^)(NSError *error))failure
 {
     NSParameterAssert(path);
-
-    path = AFPathByEscapingSpacesWithPlusSigns(path);
 
     return [self enqueueS3RequestOperationWithMethod:@"DELETE" path:path parameters:nil success:success failure:failure];
 }

@@ -91,12 +91,14 @@
  Lists information about the objects in a bucket for a user that has read access to the bucket.
 
  @param bucket The S3 bucket to get. Must not be `nil`.
+ @param parameters The parameters for list objects, you can implement something such directory listing with it.
  @param success A block object to be executed when the request operation finishes successfully. This block has no return value and takes a single argument: the response object from the server.
  @param failure A block object to be executed when the request operation finishes unsuccessfully, or that finishes successfully, but encountered an error while parsing the response data. This block has no return value and takes a single argument: the `NSError` object describing error that occurred.
  
  @return The operation that was enqueued on operationQueue
  */
 - (AFHTTPRequestOperation *)getBucket:(NSString *)bucket
+                           parameters:(NSDictionary *)parameters
                               success:(void (^)(id responseObject))success
                               failure:(void (^)(NSError *error))failure;
 
@@ -214,6 +216,15 @@
                                      progress:(void (^)(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite))progress
                                       success:(void (^)(id responseObject))success
                                       failure:(void (^)(NSError *error))failure;
+
+/* same as putObjectWithFile but with NSData */
+
+- (AFHTTPRequestOperation *)putObjectWithData:(NSData *)data
+                              destinationPath:(NSString *)destinationPath
+                               parameters:(NSDictionary *)parameters
+                                 progress:(void (^)(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite))progress
+                                  success:(void (^)(id responseObject))success
+                                  failure:(void (^)(NSError *error))failure;
 
 /**
  Deletes the specified object. Once deleted, there is no method to restore or undelete an object.

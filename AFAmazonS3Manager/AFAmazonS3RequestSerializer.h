@@ -95,6 +95,11 @@
                                    expiration:(NSDate *)expiration
                                         error:(NSError * __autoreleasing *)error;
 
+// S3 expects parameters as headers for PUT requests for calculating authentication
+- (NSMutableURLRequest *)putRequestWithURLString:(NSString *)URLString
+                                      parameters:(NSDictionary *)parameters
+                                           error:(NSError *__autoreleasing *)error;
+
 @end
 
 ///----------------
