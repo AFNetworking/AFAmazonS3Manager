@@ -107,8 +107,8 @@
  The following AWS regions are defined:
 
  `AFAmazonS3USStandardRegion`: US Standard (s3.amazonaws.com);
- `AFAmazonS3USWest1Region`: US West (Oregon) Region (s3-us-west-1.amazonaws.com)
- `AFAmazonS3USWest2Region`: US West (Northern California) Region (s3-us-west-2.amazonaws.com)
+ `AFAmazonS3USWest1Region`: US West (Northern California) Region (s3-us-west-1.amazonaws.com)
+ `AFAmazonS3USWest2Region`: US West (Oregon) Region (s3-us-west-2.amazonaws.com)
  `AFAmazonS3EUWest1Region`: EU (Ireland) Region (s3-eu-west-1.amazonaws.com)
  `AFAmazonS3APSoutheast1Region`: Asia Pacific (Singapore) Region (s3-ap-southeast-1.amazonaws.com)
  `AFAmazonS3APSoutheast2Region`: Asia Pacific (Sydney) Region (s3-ap-southeast-2.amazonaws.com)
