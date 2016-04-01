@@ -21,7 +21,6 @@
 // THE SOFTWARE.
 
 #import "AFAmazonS3Manager.h"
-#import "AFAmazonS3ResponseSerializer.h"
 
 NSString * const AFAmazonS3ManagerErrorDomain = @"com.alamofire.networking.s3.error";
 
