@@ -22,6 +22,7 @@
 
 #import "AFHTTPRequestOperationManager.h"
 #import "AFAmazonS3RequestSerializer.h"
+#import "AFAmazonS3ResponseSerializer.h"
 
 /**
  AFAmazonS3Manager` is an `AFHTTPRequestOperationManager` subclass for interacting with the Amazon S3 webservice API (http://aws.amazon.com/s3/).
