@@ -15,5 +15,5 @@ Pod::Spec.new do |s|
   s.source_files = 'AFAmazonS3Manager'
   s.requires_arc = true
 
-  s.dependency 'AFNetworking/NSURLConnection', '~>2.4'
+  s.dependency 'AFNetworking/NSURLConnection', '~> 2.6'
 end
