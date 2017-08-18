@@ -21,6 +21,7 @@
 // THE SOFTWARE.
 
 #import "AFURLResponseSerialization.h"
+#import <AFNetworking/AFURLResponseSerialization.h>
 
 /**
  Returns an `AFAmazonS3ResponseObject` object from the AmazonS3 HTTP response

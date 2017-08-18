@@ -20,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#import "AFURLRequestSerialization.h"
+#import <AFNetworking/AFURLRequestSerialization.h>
 
 /**
  `AFAmazonS3RequestSerializer` is an `AFHTTPRequestSerializer` subclass with convenience methods for creating requests for the Amazon S3 webservice, including creating an authorization header and building an endpoint URL for a given bucket, region, and TLS preferences. 
