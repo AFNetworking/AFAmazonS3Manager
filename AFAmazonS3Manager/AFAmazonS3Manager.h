@@ -20,13 +20,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#import "AFHTTPRequestOperationManager.h"
+#import <AFNetworking/AFHTTPSessionManager.h>
 #import "AFAmazonS3RequestSerializer.h"
 
 /**
  AFAmazonS3Manager` is an `AFHTTPRequestOperationManager` subclass for interacting with the Amazon S3 webservice API (http://aws.amazon.com/s3/).
  */
-@interface AFAmazonS3Manager : AFHTTPRequestOperationManager <NSSecureCoding, NSCopying>
+@interface AFAmazonS3Manager : AFHTTPSessionManager <NSSecureCoding, NSCopying>
 
 /**
  The base URL for the S3 manager.
@@ -59,13 +59,13 @@
  @param success A block object to be executed when the request operation finishes successfully. This block has no return value and takes a single argument: the response object from the server.
  @param failure A block object to be executed when the request operation finishes unsuccessfully, or that finishes successfully, but encountered an error while parsing the response data. This block has no return value and takes a single argument: the `NSError` object describing error that occurred.
  
- @return The operation that was enqueued on operationQueue
+ @return The data task
  */
-- (AFHTTPRequestOperation *)enqueueS3RequestOperationWithMethod:(NSString *)method
-                                                           path:(NSString *)path
-                                                     parameters:(NSDictionary *)parameters
-                                                        success:(void (^)(id responseObject))success
-                                                        failure:(void (^)(NSError *error))failure;
+- (NSURLSessionDataTask *)enqueueS3DataTaskWithMethod:(NSString *)method
+                                                 path:(NSString *)path
+                                           parameters:(NSDictionary *)parameters
+                                              success:(void (^)(NSURLSessionDataTask *, id))success
+                                              failure:(void (^)(NSURLSessionDataTask *, NSError *))failure;
 
 ///-------------------------
 /// @name Service Operations
@@ -77,10 +77,11 @@
  @param success A block object to be executed when the request operation finishes successfully. This block has no return value and takes a single argument: the response object from the server.
  @param failure A block object to be executed when the request operation finishes unsuccessfully, or that finishes successfully, but encountered an error while parsing the response data. This block has no return value and takes a single argument: the `NSError` object describing error that occurred.
  
- @return The operation that was enqueued on operationQueue
+ @return The data task
  */
-- (AFHTTPRequestOperation *)getServiceWithSuccess:(void (^)(id responseObject))success
-                                          failure:(void (^)(NSError *error))failure;
+- (NSURLSessionDataTask *)getServiceWithSuccess:(void (^)(NSURLSessionDataTask *, id))success
+                                        failure:(void (^)(NSURLSessionDataTask *, NSError *))failure;
+
 
 
 ///------------------------
@@ -94,11 +95,11 @@
  @param success A block object to be executed when the request operation finishes successfully. This block has no return value and takes a single argument: the response object from the server.
  @param failure A block object to be executed when the request operation finishes unsuccessfully, or that finishes successfully, but encountered an error while parsing the response data. This block has no return value and takes a single argument: the `NSError` object describing error that occurred.
  
- @return The operation that was enqueued on operationQueue
+ @return The data task
  */
-- (AFHTTPRequestOperation *)getBucket:(NSString *)bucket
-                              success:(void (^)(id responseObject))success
-                              failure:(void (^)(NSError *error))failure;
+- (NSURLSessionDataTask *)getBucket:(NSString *)bucket
+                            success:(void (^)(NSURLSessionDataTask *, id))success
+                            failure:(void (^)(NSURLSessionDataTask *, NSError *))failure;
 
 /**
  Creates a new bucket belonging to the account of the authenticated request sender. Optionally, you can specify a EU (Ireland) or US-West (N. California) location constraint.
@@ -110,10 +111,10 @@
  
  @return The operation that was enqueued on operationQueue
  */
-- (AFHTTPRequestOperation *)putBucket:(NSString *)bucket
+- (NSURLSessionDataTask *)putBucket:(NSString *)bucket
                            parameters:(NSDictionary *)parameters
-                              success:(void (^)(id responseObject))success
-                              failure:(void (^)(NSError *error))failure;
+                            success:(void (^)(NSURLSessionDataTask *, id))success
+                            failure:(void (^)(NSURLSessionDataTask *, NSError *))failure;
 
 /**
  Deletes the specified bucket. All objects in the bucket must be deleted before the bucket itself can be deleted.
@@ -122,11 +123,11 @@
  @param success A block object to be executed when the request operation finishes successfully. This block has no return value and takes a single argument: the response object from the server.
  @param failure A block object to be executed when the request operation finishes unsuccessfully, or that finishes successfully, but encountered an error while parsing the response data. This block has no return value and takes a single argument: the `NSError` object describing error that occurred.
  
- @return The operation that was enqueued on operationQueue
+ @return The data task
  */
-- (AFHTTPRequestOperation *)deleteBucket:(NSString *)bucket
-                                 success:(void (^)(id responseObject))success
-                                 failure:(void (^)(NSError *error))failure;
+- (NSURLSessionDataTask *)deleteBucket:(NSString *)bucket
+                               success:(void (^)(NSURLSessionDataTask *, id))success
+                               failure:(void (^)(NSURLSessionDataTask *, NSError *))failure;
 
 ///----------------------------------------------
 /// @name Object Operations
@@ -139,9 +140,9 @@
  @param success A block object to be executed when the request operation finishes successfully. This block has no return value and takes a single argument: the response object from the server.
  @param failure A block object to be executed when the request operation finishes unsuccessfully, or that finishes successfully, but encountered an error while parsing the response data. This block has no return value and takes a single argument: the `NSError` object describing error that occurred.
  */
-- (AFHTTPRequestOperation *)headObjectWithPath:(NSString *)path
-                                       success:(void (^)(NSHTTPURLResponse *response))success
-                                       failure:(void (^)(NSError *error))failure;
+- (NSURLSessionDataTask *)headObjectWithPath:(NSString *)path
+                                     success:(void (^)(NSURLSessionDataTask *, id))success
+                                     failure:(void (^)(NSURLSessionDataTask *, NSError *))failure;
 
 /**
  Gets an object for a user that has read access to the object.
@@ -151,29 +152,13 @@
  @param success A block object to be executed when the request operation finishes successfully. This block has no return value and takes a single argument: the response object from the server.
  @param failure A block object to be executed when the request operation finishes unsuccessfully, or that finishes successfully, but encountered an error while parsing the response data. This block has no return value and takes a single argument: the `NSError` object describing error that occurred.
  
- @return The operation that was enqueued
+ @return The data task
  */
-- (AFHTTPRequestOperation *)getObjectWithPath:(NSString *)path
-                                     progress:(void (^)(NSUInteger bytesRead, long long totalBytesRead, long long totalBytesExpectedToRead))progress
-                                      success:(void (^)(id responseObject, NSData *responseData))success
-                                      failure:(void (^)(NSError *error))failure;
-
-/**
- Gets an object for a user that has read access to the object.
-
- @param path The object path. Must not be `nil`.
- @param outputStream The `NSOutputStream` object receiving data from the request.
- @param progress A block object to be called when an undetermined number of bytes have been downloaded from the server. This block has no return value and takes three arguments: the number of bytes read since the last time the download progress block was called, the total bytes read, and the total bytes expected to be read during the request, as initially determined by the expected content size of the `NSHTTPURLResponse` object. This block may be called multiple times, and will execute on the main thread.
- @param success A block object to be executed when the request operation finishes successfully. This block has no return value and takes a single argument: the response object from the server.
- @param failure A block object to be executed when the request operation finishes unsuccessfully, or that finishes successfully, but encountered an error while parsing the response data. This block has no return value and takes a single argument: the `NSError` object describing error that occurred.
- 
- @return The operation that was enqueued
- */
-- (AFHTTPRequestOperation *)getObjectWithPath:(NSString *)path
-                                 outputStream:(NSOutputStream *)outputStream
-                                     progress:(void (^)(NSUInteger bytesRead, long long totalBytesRead, long long totalBytesExpectedToRead))progress
-                                      success:(void (^)(id responseObject))success
-                                      failure:(void (^)(NSError *error))failure;
+- (NSURLSessionDataTask *)getObjectWithPath:(NSString *)path
+                                   progress:(nullable void (^)(NSProgress *downloadProgress))downloadProgressBlock
+                                destination:(nullable NSURL * _Nullable (^)(NSURL * _Nullable targetPath, NSURLResponse * _Nullable response))destination
+                                    success:(void (^_Nullable)(NSURLResponse * _Nullable response, NSURL * _Nullable filePath))success
+                                    failure:(void (^_Nullable)(NSURLResponse * _Nullable response, NSError * _Nullable error))failure;
 
 /**
  Adds an object to a bucket using forms.
@@ -187,12 +172,12 @@
 
  @discussion `destinationPath` is relative to the bucket's root, and will create any intermediary directories as necessary. For example, specifying "/a/b/c.txt" will create the "/a" and / or "/a/b" directories within the bucket, if they do not already exist, and upload the source file as "c.txt" into "/a/b".
  */
-- (AFHTTPRequestOperation *)postObjectWithFile:(NSString *)path
-                               destinationPath:(NSString *)destinationPath
-                                    parameters:(NSDictionary *)parameters
-                                      progress:(void (^)(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite))progress
-                                       success:(void (^)(id responseObject))success
-                                       failure:(void (^)(NSError *error))failure;
+- (NSURLSessionDataTask *)postObjectWithFile:(NSString *)path
+                             destinationPath:(NSString *)destinationPath
+                                  parameters:(NSDictionary *)parameters
+                                    progress:(nullable void (^)(NSProgress * _Nullable uploadProgress))uploadProgressBlock
+                                     success:(void (^_Nullable)(NSURLResponse * _Nullable response, id _Nullable responseObject))success
+                                     failure:(void (^_Nullable)(NSURLResponse * _Nullable response, NSError * _Nullable error))failure;
 
 /**
  Adds an object to a bucket for a user that has write access to the bucket. A success response indicates the object was successfully stored; if the object already exists, it will be overwritten.
@@ -208,12 +193,12 @@
 
  @discussion `destinationPath` is relative to the bucket's root, and will create any intermediary directories as necessary. For example, specifying "/a/b/c.txt" will create the "/a" and / or "/a/b" directories within the bucket, if they do not already exist, and upload the source file as "c.txt" into "/a/b".
  */
-- (AFHTTPRequestOperation *)putObjectWithFile:(NSString *)path
-                              destinationPath:(NSString *)destinationPath
-                                   parameters:(NSDictionary *)parameters
-                                     progress:(void (^)(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite))progress
-                                      success:(void (^)(id responseObject))success
-                                      failure:(void (^)(NSError *error))failure;
+- (NSURLSessionDataTask *)putObjectWithFile:(NSString *)path
+                            destinationPath:(NSString *)destinationPath
+                                 parameters:(NSDictionary *)parameters
+                                   progress:(nullable void (^)(NSProgress * _Nullable uploadProgress))uploadProgressBlock
+                                    success:(void (^_Nullable)(NSURLResponse * _Nullable response, id _Nullable responseObject))success
+                                    failure:(void (^_Nullable)(NSURLResponse * _Nullable response, NSError * _Nullable error))failure;
 
 /**
  Deletes the specified object. Once deleted, there is no method to restore or undelete an object.
@@ -222,11 +207,11 @@
  @param success A block object to be executed when the request operation finishes successfully. This block has no return value and takes a single argument: the response object from the server.
  @param failure A block object to be executed when the request operation finishes unsuccessfully, or that finishes successfully, but encountered an error while parsing the response data. This block has no return value and takes a single argument: the `NSError` object describing error that occurred.
  
- @return The operation that was enqueued on operationQueue
+ @return The data task
  */
-- (AFHTTPRequestOperation *)deleteObjectWithPath:(NSString *)path
-                                         success:(void (^)(id responseObject))success
-                                         failure:(void (^)(NSError *error))failure;
+- (NSURLSessionDataTask *)deleteObjectWithPath:(NSString *)path
+                                       success:(void (^_Nullable)(NSURLSessionDataTask * _Nullable task, id _Nullable responseObject))success
+                                       failure:(void (^_Nullable)(NSURLSessionDataTask * _Nullable task, NSError * _Nullable error))failure;
 
 @end
 

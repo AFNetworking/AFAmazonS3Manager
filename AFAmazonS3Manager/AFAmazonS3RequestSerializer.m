@@ -32,7 +32,7 @@ NSString * const AFAmazonS3EUWest1Region = @"s3-eu-west-1.amazonaws.com";
 NSString * const AFAmazonS3EUCentral1Region = @"s3-eu-central-1.amazonaws.com";
 NSString * const AFAmazonS3APSoutheast1Region = @"s3-ap-southeast-1.amazonaws.com";
 NSString * const AFAmazonS3APSoutheast2Region = @"s3-ap-southeast-2.amazonaws.com";
-NSString * const AFAmazonS3APNortheast1Region = @"s3-ap-northeast-1.amazonaws.com";
+NSString * const AFAmazonS3APNortheast2Region = @"s3-ap-northeast-1.amazonaws.com";
 NSString * const AFAmazonS3SAEast1Region = @"s3-sa-east-1.amazonaws.com";
 
 static NSTimeInterval const AFAmazonS3DefaultExpirationTimeInterval = 60 * 60;
