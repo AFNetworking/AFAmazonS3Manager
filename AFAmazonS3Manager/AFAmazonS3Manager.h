@@ -155,10 +155,10 @@
  @return The data task
  */
 - (NSURLSessionDataTask *)getObjectWithPath:(NSString *)path
-                                   progress:(NSProgress * __nullable __autoreleasing * __nullable)progress
-                                destination:(nullable NSURL * (^)(NSURL *targetPath, NSURLResponse *response))destination
-                                    success:(void (^)(NSURLResponse *, NSURL *))success
-                                    failure:(void (^)(NSURLResponse *, NSError *))failure;
+                                   progress:(nullable void (^)(NSProgress *downloadProgress))downloadProgressBlock
+                                destination:(nullable NSURL * _Nullable (^)(NSURL * _Nullable targetPath, NSURLResponse * _Nullable response))destination
+                                    success:(void (^_Nullable)(NSURLResponse * _Nullable response, NSURL * _Nullable filePath))success
+                                    failure:(void (^_Nullable)(NSURLResponse * _Nullable response, NSError * _Nullable error))failure;
 
 /**
  Adds an object to a bucket using forms.
@@ -175,9 +175,9 @@
 - (NSURLSessionDataTask *)postObjectWithFile:(NSString *)path
                              destinationPath:(NSString *)destinationPath
                                   parameters:(NSDictionary *)parameters
-                                    progress:(NSProgress * __nullable __autoreleasing * __nullable)progress
-                                     success:(void (^)(NSURLResponse *, id))success
-                                     failure:(void (^)(NSURLResponse *, NSError *))failure;
+                                    progress:(nullable void (^)(NSProgress * _Nullable uploadProgress))uploadProgressBlock
+                                     success:(void (^_Nullable)(NSURLResponse * _Nullable response, id _Nullable responseObject))success
+                                     failure:(void (^_Nullable)(NSURLResponse * _Nullable response, NSError * _Nullable error))failure;
 
 /**
  Adds an object to a bucket for a user that has write access to the bucket. A success response indicates the object was successfully stored; if the object already exists, it will be overwritten.
@@ -196,9 +196,9 @@
 - (NSURLSessionDataTask *)putObjectWithFile:(NSString *)path
                             destinationPath:(NSString *)destinationPath
                                  parameters:(NSDictionary *)parameters
-                                   progress:(NSProgress * __nullable __autoreleasing * __nullable)progress
-                                    success:(void (^)(NSURLResponse *, id))success
-                                    failure:(void (^)(NSURLResponse *, NSError *))failure;
+                                   progress:(nullable void (^)(NSProgress * _Nullable uploadProgress))uploadProgressBlock
+                                    success:(void (^_Nullable)(NSURLResponse * _Nullable response, id _Nullable responseObject))success
+                                    failure:(void (^_Nullable)(NSURLResponse * _Nullable response, NSError * _Nullable error))failure;
 
 /**
  Deletes the specified object. Once deleted, there is no method to restore or undelete an object.
@@ -210,8 +210,8 @@
  @return The data task
  */
 - (NSURLSessionDataTask *)deleteObjectWithPath:(NSString *)path
-                                       success:(void (^)(NSURLSessionDataTask *, id))success
-                                       failure:(void (^)(NSURLSessionDataTask *, NSError *))failure;
+                                       success:(void (^_Nullable)(NSURLSessionDataTask * _Nullable task, id _Nullable responseObject))success
+                                       failure:(void (^_Nullable)(NSURLSessionDataTask * _Nullable task, NSError * _Nullable error))failure;
 
 @end
 

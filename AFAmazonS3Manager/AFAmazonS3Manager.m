@@ -166,10 +166,10 @@ static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
 }
 
 - (NSURLSessionDataTask *)getObjectWithPath:(NSString *)path
-                                   progress:(NSProgress * __nullable __autoreleasing * __nullable)progress
-                                destination:(nullable NSURL * (^)(NSURL *targetPath, NSURLResponse *response))destination
-                                    success:(void (^)(NSURLResponse *, NSURL *))success
-                                    failure:(void (^)(NSURLResponse *, NSError *))failure
+                                   progress:(nullable void (^)(NSProgress *downloadProgress))downloadProgressBlock
+                                destination:(nullable NSURL * _Nullable (^)(NSURL * _Nullable targetPath, NSURLResponse * _Nullable response))destination
+                                    success:(void (^_Nullable)(NSURLResponse * _Nullable response, NSURL * _Nullable filePath))success
+                                    failure:(void (^_Nullable)(NSURLResponse * _Nullable response, NSError * _Nullable error))failure
 {
     NSParameterAssert(path);
 
@@ -179,7 +179,7 @@ static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
     
     __block NSURLSessionDataTask *dataTask = nil;
     
-    dataTask = [self downloadTaskWithRequest:request progress:progress destination:destination
+    dataTask = [self downloadTaskWithRequest:request progress:downloadProgressBlock destination:destination
                                                  completionHandler:^(NSURLResponse * _Nonnull response, NSURL * _Nullable filePath, NSError * _Nullable error) {
                                                      if (error) {
                                                          if (failure) {
@@ -200,36 +200,38 @@ static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
 - (NSURLSessionDataTask *)postObjectWithFile:(NSString *)path
                              destinationPath:(NSString *)destinationPath
                                   parameters:(NSDictionary *)parameters
-                                    progress:(NSProgress * __nullable __autoreleasing * __nullable)progress
-                                     success:(void (^)(NSURLResponse *, id))success
-                                     failure:(void (^)(NSURLResponse *, NSError *))failure
+                                    progress:(void (^)(NSProgress * uploadProgress))uploadProgressBlock
+                                     success:(void (^)(NSURLResponse *response, id responseObject))success
+                                     failure:(void (^)(NSURLResponse *response, NSError *error))failure
 {
-    return [self setObjectWithMethod:@"POST" file:path destinationPath:destinationPath parameters:parameters progress:progress success:success failure:failure];
+    return [self setObjectWithMethod:@"POST" file:path destinationPath:destinationPath parameters:parameters progress:uploadProgressBlock success:success failure:failure];
 }
 
 - (NSURLSessionDataTask *)putObjectWithFile:(NSString *)path
-                              destinationPath:(NSString *)destinationPath
-                                   parameters:(NSDictionary *)parameters
-                                   progress:(NSProgress * __nullable __autoreleasing * __nullable)progress
-                                    success:(void (^)(NSURLResponse *, id))success
-                                    failure:(void (^)(NSURLResponse *, NSError *))failure
+                            destinationPath:(NSString *)destinationPath
+                                 parameters:(NSDictionary *)parameters
+                                   progress:(nullable void (^)(NSProgress *uploadProgress))uploadProgressBlock
+                                    success:(void (^)(NSURLResponse *response, id responseObject))success
+                                    failure:(void (^)(NSURLResponse *response, NSError * error))failure
 {
-    return [self setObjectWithMethod:@"PUT" file:path destinationPath:destinationPath parameters:parameters progress:progress success:success failure:failure];
+    return [self setObjectWithMethod:@"PUT" file:path destinationPath:destinationPath parameters:parameters progress:uploadProgressBlock success:success failure:failure];
 }
 
 - (NSURLSessionDataTask *)setObjectWithMethod:(NSString *)method
                                            file:(NSString *)filePath
                                 destinationPath:(NSString *)destinationPath
                                      parameters:(NSDictionary *)parameters
-                                     progress:(NSProgress * __nullable __autoreleasing * __nullable)progress
+                                     progress:(void (^)(NSProgress *downloadProgress))uploadProgressBlock
                                       success:(void (^)(NSURLResponse *, id))success
                                       failure:(void (^)(NSURLResponse *, NSError *))failure
 {
     NSParameterAssert(method);
     NSParameterAssert(filePath);
     NSParameterAssert(destinationPath);
+    
+    NSURL *fileURL = [NSURL fileURLWithPath:filePath];
 
-    NSMutableURLRequest *fileRequest = [NSMutableURLRequest requestWithURL:[NSURL fileURLWithPath:filePath]];
+    NSMutableURLRequest *fileRequest = [NSMutableURLRequest requestWithURL:fileURL];
     fileRequest.cachePolicy = NSURLRequestReloadIgnoringLocalCacheData;
 
     NSURLResponse *response = nil;
@@ -279,7 +281,7 @@ static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
     __block NSURLSessionDataTask *dataTask = nil;
 
 
-    dataTask = [self uploadTaskWithRequest:request fromFile:filePath progress:progress completionHandler:^(NSURLResponse *response, id responseObject, NSError *error) {
+    dataTask = [self uploadTaskWithRequest:request fromFile:fileURL progress:uploadProgressBlock completionHandler:^(NSURLResponse *response, id responseObject, NSError *error) {
         if (error) {
             if (failure) {
                 failure(response, error);
@@ -297,8 +299,8 @@ static NSString * AFPathByEscapingSpacesWithPlusSigns(NSString *path) {
 }
 
 - (NSURLSessionDataTask *)deleteObjectWithPath:(NSString *)path
-                                       success:(void (^)(NSURLSessionDataTask *, id))success
-                                       failure:(void (^)(NSURLSessionDataTask *, NSError *))failure
+                                       success:(void (^)(NSURLSessionDataTask * task, id responseObject))success
+                                       failure:(void (^)(NSURLSessionDataTask * task, NSError * error))failure
 {
     NSParameterAssert(path);
 
